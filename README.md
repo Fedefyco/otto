@@ -1,5 +1,9 @@
 # Otto Roadmap
 
+'''diff
++ ciao mamma
+'''
+
 -1st level: there are about 33 models that we used their predictions as meta features for the 2nd level, also there are 8 engineered features.
 -2nd level: there are 3 models trained using 33 meta features + 7 features from 1st level: XGBOOST, Neural Network(NN) and ADABOOST with ExtraTrees.
 -3rd level: it's composed by a weighted mean of 2nd level predictions.

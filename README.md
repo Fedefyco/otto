@@ -1,9 +1,5 @@
 # Otto Roadmap
 
-- ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) `#f03c15`
-- ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) `#c5f015`
-- ![#1589F0](https://placehold.it/15/1589F0/000000?text=+) `#1589F0`
-
 -1st level: there are about 33 models that we used their predictions as meta features for the 2nd level, also there are 8 engineered features.
 -2nd level: there are 3 models trained using 33 meta features + 7 features from 1st level: XGBOOST, Neural Network(NN) and ADABOOST with ExtraTrees.
 -3rd level: it's composed by a weighted mean of 2nd level predictions.

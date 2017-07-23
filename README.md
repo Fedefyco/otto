@@ -34,7 +34,7 @@ X = Train and test sets
 + Model 21: XGboost. Trained on raw features. Extremely bagged (30 times averaged).
 + Model 22: KNN on features X + int(X == 0)
 + Model 23: KNN on features X + int(X == 0) + log(X + 1)
-- [x] Model 24: KNN on raw with 2 neighbours 
++ [x] Model 24: KNN on raw with 2 neighbours 
 - [x] Model 25: KNN on raw with 4 neighbours
 - [x] Model 26: KNN on raw with 8 neighbours
 - [x] Model 27: KNN on raw with 16 neighbours

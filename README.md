@@ -11,39 +11,39 @@ The 2nd level we trainned using 4 Kfold random indices. It provided us the abili
 Models and features used for 2nd level training:
 
 X = Train and test sets
-+ Model 1: RandomForest(R). Dataset: X
-+ Model 2: Logistic Regression(scikit). Dataset: Log(X+1)
-+ Model 3: Extra Trees Classifier(scikit). Dataset: Log(X+1) (but could be raw)
-+ Model 4: KNeighborsClassifier(scikit). Dataset: Scale( Log(X+1) )
-+ Model 5: libfm. Dataset: Sparse(X). Each feature value is a unique level.
-+ Model 6: H2O NN. Bag of 10 runs. Dataset: sqrt( X + 3/8) 
-+ Model 7: Multinomial Naive Bayes(scikit). Dataset: Log(X+1)
-+ Model 8: Lasagne NN(CPU). Bag of 2 NN runs. First with Dataset Scale( Log(X+1) ) and second with Dataset Scale( X )
-+ Model 9: Lasagne NN(CPU). Bag of 6 runs. Dataset: Scale( Log(X+1) )
-+ Model 10: T-sne. Dimension reduction to 3 dimensions. Also stacked 2 kmeans features using the T-sne 3 dimensions. Dataset: Log(X+1)
-+ Model 11: Sofia(R). Dataset: one against all with learner_type="logreg-pegasos" and loop_type="balanced-stochastic". Dataset: Scale(X)
-+ Model 12: Sofia(R). Trainned one against all with learner_type="logreg-pegasos" and loop_type="balanced-stochastic". Dataset: Scale(X, T-sne Dimension, some 3 level interactions between 13 most important features based in randomForest importance )
-+ Model 13: Sofia(R). Trainned one against all with learner_type="logreg-pegasos" and loop_type="combined-roc". Dataset: Log(1+X, T-sne Dimension, some 3 level interactions between 13 most important features based in randomForest importance )
-+ Model 14: Xgboost(R). Trainned one against all. Dataset: (X, feature sum(zeros) by row ). Replaced zeros with NA. 
-+ Model 15: Xgboost(R). Trainned Multiclass Soft-Prob. Dataset: (X, 7 Kmeans features with different number of clusters, rowSums(X==0), rowSums(Scale(X)>0.5), rowSums(Scale(X)< -0.5) )
-+ Model 16: Xgboost(R). Trainned Multiclass Soft-Prob. Dataset: (X, T-sne features, Some Kmeans clusters of X)
-+ Model 17: Xgboost(R): Trainned Multiclass Soft-Prob. Dataset: (X, T-sne features, Some Kmeans clusters of log(1+X) )
-+ Model 18: Xgboost(R): Trainned Multiclass Soft-Prob. Dataset: (X, T-sne features, Some Kmeans clusters of Scale(X) )
-+ Model 19: Lasagne NN(GPU). 2-Layer. Bag of 120 NN runs with different number of epochs.
-+ Model 20: Lasagne NN(GPU). 3-Layer. Bag of 120 NN runs with different number of epochs.
-+ Model 21: XGboost. Trained on raw features. Extremely bagged (30 times averaged).
-+ Model 22: KNN on features X + int(X == 0)
-+ Model 23: KNN on features X + int(X == 0) + log(X + 1)
++ [ ] Model 1: RandomForest(R). Dataset: X
++ [ ] Model 2: Logistic Regression(scikit). Dataset: Log(X+1)
++ [ ] Model 3: Extra Trees Classifier(scikit). Dataset: Log(X+1) (but could be raw)
++ [ ] Model 4: KNeighborsClassifier(scikit). Dataset: Scale( Log(X+1) )
++ [ ] Model 5: libfm. Dataset: Sparse(X). Each feature value is a unique level.
++ [ ] Model 6: H2O NN. Bag of 10 runs. Dataset: sqrt( X + 3/8) 
++ [ ] Model 7: Multinomial Naive Bayes(scikit). Dataset: Log(X+1)
++ [ ] Model 8: Lasagne NN(CPU). Bag of 2 NN runs. First with Dataset Scale( Log(X+1) ) and second with Dataset Scale( X )
++ [ ] Model 9: Lasagne NN(CPU). Bag of 6 runs. Dataset: Scale( Log(X+1) )
++ [ ] Model 10: T-sne. Dimension reduction to 3 dimensions. Also stacked 2 kmeans features using the T-sne 3 dimensions. Dataset: Log(X+1)
++ [ ] Model 11: Sofia(R). Dataset: one against all with learner_type="logreg-pegasos" and loop_type="balanced-stochastic". Dataset: Scale(X)
++ [ ] Model 12: Sofia(R). Trainned one against all with learner_type="logreg-pegasos" and loop_type="balanced-stochastic". Dataset: Scale(X, T-sne Dimension, some 3 level interactions between 13 most important features based in randomForest importance )
++ [ ] Model 13: Sofia(R). Trainned one against all with learner_type="logreg-pegasos" and loop_type="combined-roc". Dataset: Log(1+X, T-sne Dimension, some 3 level interactions between 13 most important features based in randomForest importance )
++ [ ] Model 14: Xgboost(R). Trainned one against all. Dataset: (X, feature sum(zeros) by row ). Replaced zeros with NA. 
++ [ ] Model 15: Xgboost(R). Trainned Multiclass Soft-Prob. Dataset: (X, 7 Kmeans features with different number of clusters, rowSums(X==0), rowSums(Scale(X)>0.5), rowSums(Scale(X)< -0.5) )
++ [ ] Model 16: Xgboost(R). Trainned Multiclass Soft-Prob. Dataset: (X, T-sne features, Some Kmeans clusters of X)
++ [ ] Model 17: Xgboost(R): Trainned Multiclass Soft-Prob. Dataset: (X, T-sne features, Some Kmeans clusters of log(1+X) )
++ [ ] Model 18: Xgboost(R): Trainned Multiclass Soft-Prob. Dataset: (X, T-sne features, Some Kmeans clusters of Scale(X) )
++ [ ] Model 19: Lasagne NN(GPU). 2-Layer. Bag of 120 NN runs with different number of epochs.
++ [ ] Model 20: Lasagne NN(GPU). 3-Layer. Bag of 120 NN runs with different number of epochs.
++ [ ] Model 21: XGboost. Trained on raw features. Extremely bagged (30 times averaged).
++ [ ] Model 22: KNN on features X + int(X == 0)
++ [ ] Model 23: KNN on features X + int(X == 0) + log(X + 1)
 + [x] Model 24: KNN on raw with 2 neighbours 
-- [x] Model 25: KNN on raw with 4 neighbours
-- [x] Model 26: KNN on raw with 8 neighbours
-- [x] Model 27: KNN on raw with 16 neighbours
-- [x] Model 28: KNN on raw with 32 neighbours
-- [x] Model 29: KNN on raw with 64 neighbours
-- [x] Model 30: KNN on raw with 128 neighbours
-- [x] Model 31: KNN on raw with 256 neighbours
-- [x] Model 32: KNN on raw with 512 neighbours
-- [x] Model 33: KNN on raw with 1024 neighbours
++ [x] Model 25: KNN on raw with 4 neighbours
++ [x] Model 26: KNN on raw with 8 neighbours
++ [x] Model 27: KNN on raw with 16 neighbours
++ [x] Model 28: KNN on raw with 32 neighbours
++ [x] Model 29: KNN on raw with 64 neighbours
++ [x] Model 30: KNN on raw with 128 neighbours
++ [x] Model 31: KNN on raw with 256 neighbours
++ [x] Model 32: KNN on raw with 512 neighbours
++ [x] Model 33: KNN on raw with 1024 neighbours
 
 + Feature 1: Distances to nearest neighbours of each classes
 + Feature 2: Sum of distances of 2 nearest neighbours of each classes

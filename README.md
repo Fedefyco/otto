@@ -12,9 +12,9 @@ Models and features used for 2nd level training:
 
 X = Train and test sets
 + [ ] Model 1: RandomForest(R). Dataset: X
-+ [ ] Model 2: Logistic Regression(scikit). Dataset: Log(X+1)
-+ [ ] Model 3: Extra Trees Classifier(scikit). Dataset: Log(X+1) (but could be raw)
-+ [ ] Model 4: KNeighborsClassifier(scikit). Dataset: Scale( Log(X+1) )
++ [x] Model 2: Logistic Regression(scikit). Dataset: Log(X+1)
++ [x] Model 3: Extra Trees Classifier(scikit). Dataset: Log(X+1) (but could be raw)
++ [x] Model 4: KNeighborsClassifier(scikit). Dataset: Scale( Log(X+1) )
 + [ ] Model 5: libfm. Dataset: Sparse(X). Each feature value is a unique level.
 + [ ] Model 6: H2O NN. Bag of 10 runs. Dataset: sqrt( X + 3/8) 
 + [ ] Model 7: Multinomial Naive Bayes(scikit). Dataset: Log(X+1)

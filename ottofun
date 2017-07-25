@@ -1,22 +1,36 @@
-#KNN 
+#==============================================================================
+#==============================================================================
+# # OTTO PROGRAM
+#==============================================================================
+#==============================================================================
+
 #import sys
 #sys.modules[__name__].__dict__.clear()
 
 import numpy as np
 import pandas as pd
-
+from copy import deepcopy as dcopy
+#Import data
 data=pd.read_csv('train.csv', sep=',')
+
+#Pre-processing data into log(x+1)
+data1=dcopy(data)
+data1.ix[:,1:-1]=np.log(data.ix[:,1:-1]+1)
 
 X=data.ix[:,1:94]
 Y=data.ix[:,94]
 
 k = np.arange(1,11)
-from sklearn import neighbors
 
 #Creation of the matrix where I store all the test and prediction datas
 ntest = 15
 matrix=pd.DataFrame()
 
+#==============================================================================
+# MODEL 24-33: KNN - Dataset: X
+#==============================================================================
+
+from sklearn.neighbors import KNeighborsClassifier as knclass
 #For loop that executes all KNN from k = 2 to k = 1024
 for i in k:
     # Split data in train and test data
@@ -30,10 +44,99 @@ for i in k:
     Y_test  = Y[indices[-ntest:]]
     
     #KNN with k from 2 to 1024
-    knn = neighbors.KNeighborsClassifier(n_neighbors=2**i)
-    
+    knn = knclass(n_neighbors=2**i)
     knn.fit(X_train, Y_train)
     Y_predict = knn.predict(X_test)
     
-    matrix.insert(matrix.shape[1],'Y_test_k{}'.format(2**i),np.array(Y_test,dtype=object))       
-    matrix.insert(matrix.shape[1],'Y_predict_k{}'.format(2**i),Y_predict)
+# Add the data to the matrix
+    matrix.insert(matrix.shape[1],'Y_test_knn{}'.format(2**i),np.array(Y_test,dtype=object))       
+    matrix.insert(matrix.shape[1],'Y_predict_knn{}'.format(2**i),Y_predict)
+
+#==============================================================================
+# MODEL 4: KNEIGHBORS CLASSIFIER - Dataset: Scale(Log(x+1))
+#==============================================================================
+
+from sklearn.preprocessing import scale
+
+data2=dcopy(data1)
+data2.ix[:,1:-1]=scale(data2.ix[:,1:-1])
+
+X=data2.ix[:,1:94]
+Y=data2.ix[:,94]
+
+# Split data in train and test data
+# A random permutation, to split the data randomly
+np.random.seed(0)
+indices = np.random.permutation(len(Y))
+
+X_train = X.ix[indices[:-20000],:]
+Y_train = Y[indices[:-20000]]
+X_test  = X.ix[indices[-ntest:],:]
+Y_test  = Y[indices[-ntest:]]
+
+#KNClassification
+knn1=knclass()
+knn1.fit(X_train,Y_train)
+Y_predict=knn1.predict(X_test)
+
+matrix.insert(matrix.shape[1],'Y_test_knnscale',np.array(Y_test,dtype=object))       
+matrix.insert(matrix.shape[1],'Y_predict_knnscale',Y_predict)
+#==============================================================================
+# MODEL 2: LOG REGRESSION - Dataset: log(X+1))
+#==============================================================================
+
+from sklearn.linear_model import LogisticRegression as logit
+
+#Dataset is log(x+1)
+
+X=data1.ix[:,1:94]
+Y=data1.ix[:,94]
+
+# Split data in train and test data
+# A random permutation, to split the data randomly
+np.random.seed(0)
+indices = np.random.permutation(len(Y))
+
+X_train = X.ix[indices[:-20000],:]
+Y_train = Y[indices[:-20000]]
+X_test  = X.ix[indices[-ntest:],:]
+Y_test  = Y[indices[-ntest:]]
+
+#Logistic Regression
+logistic = logit()
+logistic.fit(X_train,Y_train)
+Y_predict = logistic.predict(X_test)
+
+# Add the data to the matrix
+matrix.insert(matrix.shape[1],'Y_test_logit',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_predict_logit',Y_predict)
+
+#==============================================================================
+# MODEL 3: EXTRA TREES CLASSIFIER - Dataset: log(X+1)
+#==============================================================================
+
+from sklearn.ensemble import ExtraTreesClassifier as extreesclass
+
+#Dataset is log(x+1)
+X=data1.ix[:,1:94]
+Y=data1.ix[:,94]
+
+# Split data in train and test data
+# A random permutation, to split the data randomly
+np.random.seed(0)
+indices = np.random.permutation(len(Y))
+
+X_train = X.ix[indices[:-20000],:]
+Y_train = Y[indices[:-20000]]
+X_test  = X.ix[indices[-ntest:],:]
+Y_test  = Y[indices[-ntest:]]
+
+#Extra Trees Classification
+extratrees = extreesclass()
+extratrees.fit(X_train,Y_train)
+Y_predict = extratrees.predict(X_test)
+
+# Add the data to the matrix
+matrix.insert(matrix.shape[1],'Y_test_extratreeas',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_predict_extratrees',Y_predict)
+

@@ -15,10 +15,10 @@ data=pd.read_csv('train.csv', sep=',')
 
 #Pre-processing data into log(x+1)
 data1=dcopy(data)
-data1.ix[:,1:-1]=np.log(data.ix[:,1:-1]+1)
+data1.iloc[:,1:-1]=np.log(data.iloc[:,1:-1]+1)
 
-X=data.ix[:,1:94]
-Y=data.ix[:,94]
+X=data.iloc[:,1:94]
+Y=data.iloc[:,94]
 
 k = np.arange(1,11)
 
@@ -38,9 +38,9 @@ for i in k:
     np.random.seed(i)
     indices = np.random.permutation(len(Y))
     
-    X_train = X.ix[indices[:-20000],:]
+    X_train = X.iloc[indices[:-20000],:]
     Y_train = Y[indices[:-20000]]
-    X_test  = X.ix[indices[-ntest:],:]
+    X_test  = X.iloc[indices[-ntest:],:]
     Y_test  = Y[indices[-ntest:]]
     
     #KNN with k from 2 to 1024
@@ -59,28 +59,90 @@ for i in k:
 from sklearn.preprocessing import scale
 
 data2=dcopy(data1)
-data2.ix[:,1:-1]=scale(data2.ix[:,1:-1])
+data2.iloc[:,1:-1]=scale(data2.iloc[:,1:-1])
 
-X=data2.ix[:,1:94]
-Y=data2.ix[:,94]
+X=data2.iloc[:,1:94]
+Y=data2.iloc[:,94]
 
 # Split data in train and test data
 # A random permutation, to split the data randomly
 np.random.seed(0)
 indices = np.random.permutation(len(Y))
 
-X_train = X.ix[indices[:-20000],:]
+X_train = X.iloc[indices[:-20000],:]
 Y_train = Y[indices[:-20000]]
-X_test  = X.ix[indices[-ntest:],:]
+X_test  = X.iloc[indices[-ntest:],:]
 Y_test  = Y[indices[-ntest:]]
 
 #KNClassification
-knn1=knclass()
-knn1.fit(X_train,Y_train)
-Y_predict=knn1.predict(X_test)
+knn=knclass()
+knn.fit(X_train,Y_train)
+Y_predict=knn.predict(X_test)
 
-matrix.insert(matrix.shape[1],'Y_test_knnscale',np.array(Y_test,dtype=object))       
-matrix.insert(matrix.shape[1],'Y_predict_knnscale',Y_predict)
+matrix.insert(matrix.shape[1],'Y_test_knn_scale_log',np.array(Y_test,dtype=object))       
+matrix.insert(matrix.shape[1],'Y_predict_knn_scale_log',Y_predict)
+
+#==============================================================================
+# MODEL 22: KNN on features X + int(X == 0)
+#==============================================================================
+#
+# Add feature int(X==0) called 'Num_0' to data
+data3=dcopy(data)
+data_0 = np.count_nonzero(data==0,axis=1) 
+data3.insert(data3.shape[1]-1,'Num_0',np.array(data_0,dtype=object))
+
+X=data3.iloc[:,1:95]
+Y=data3.iloc[:,95]
+
+# Split data in train and test data
+# A random permutation, to split the data randomly
+np.random.seed(0)
+indices = np.random.permutation(len(Y))
+
+X_train = X.iloc[indices[:-20000],:]
+Y_train = Y[indices[:-20000]]
+X_test  = X.iloc[indices[-ntest:],:]
+Y_test  = Y[indices[-ntest:]]
+
+#KNClassification
+knn=knclass()
+knn.fit(X_train,Y_train)
+Y_predict=knn.predict(X_test)
+
+matrix.insert(matrix.shape[1],'Y_test_knn+num0',np.array(Y_test,dtype=object))       
+matrix.insert(matrix.shape[1],'Y_predict_knn+num0',Y_predict)
+
+# =============================================================================
+# Model 23: KNN on features X + int(X == 0) + log(X + 1)
+# =============================================================================
+
+# Add feature log(x+1) to data3
+data4=dcopy(data3)
+del i
+for i in np.arange(1,data1.shape[1]-1):
+    data4.insert(data4.shape[1]-1,'Feat_{}_log'.format(i),np.array(data1.iloc[:,i],dtype=object))
+
+X=data4.iloc[:,1:-1]
+Y=data4.iloc[:,-1]
+
+# Split data in train and test data
+# A random permutation, to split the data randomly
+np.random.seed(0)
+indices = np.random.permutation(len(Y))
+
+X_train = X.iloc[indices[:-20000],:]
+Y_train = Y[indices[:-20000]]
+X_test  = X.iloc[indices[-ntest:],:]
+Y_test  = Y[indices[-ntest:]]
+
+#KNClassification
+knn=knclass()
+knn.fit(X_train,Y_train)
+Y_predict=knn.predict(X_test)
+
+matrix.insert(matrix.shape[1],'Y_test_knn+num0+log',np.array(Y_test,dtype=object))       
+matrix.insert(matrix.shape[1],'Y_predict_knn+num0+log',Y_predict)
+
 #==============================================================================
 # MODEL 2: LOG REGRESSION - Dataset: log(X+1))
 #==============================================================================
@@ -89,17 +151,17 @@ from sklearn.linear_model import LogisticRegression as logit
 
 #Dataset is log(x+1)
 
-X=data1.ix[:,1:94]
-Y=data1.ix[:,94]
+X=data1.iloc[:,1:94]
+Y=data1.iloc[:,94]
 
 # Split data in train and test data
 # A random permutation, to split the data randomly
 np.random.seed(0)
 indices = np.random.permutation(len(Y))
 
-X_train = X.ix[indices[:-20000],:]
+X_train = X.iloc[indices[:-20000],:]
 Y_train = Y[indices[:-20000]]
-X_test  = X.ix[indices[-ntest:],:]
+X_test  = X.iloc[indices[-ntest:],:]
 Y_test  = Y[indices[-ntest:]]
 
 #Logistic Regression
@@ -108,8 +170,8 @@ logistic.fit(X_train,Y_train)
 Y_predict = logistic.predict(X_test)
 
 # Add the data to the matrix
-matrix.insert(matrix.shape[1],'Y_test_logit',np.array(Y_test,dtype=object))
-matrix.insert(matrix.shape[1],'Y_predict_logit',Y_predict)
+matrix.insert(matrix.shape[1],'Y_test_log',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_predict_log',Y_predict)
 
 #==============================================================================
 # MODEL 3: EXTRA TREES CLASSIFIER - Dataset: log(X+1)
@@ -118,17 +180,17 @@ matrix.insert(matrix.shape[1],'Y_predict_logit',Y_predict)
 from sklearn.ensemble import ExtraTreesClassifier as extreesclass
 
 #Dataset is log(x+1)
-X=data1.ix[:,1:94]
-Y=data1.ix[:,94]
+X=data1.iloc[:,1:94]
+Y=data1.iloc[:,94]
 
 # Split data in train and test data
 # A random permutation, to split the data randomly
 np.random.seed(0)
 indices = np.random.permutation(len(Y))
 
-X_train = X.ix[indices[:-20000],:]
+X_train = X.iloc[indices[:-20000],:]
 Y_train = Y[indices[:-20000]]
-X_test  = X.ix[indices[-ntest:],:]
+X_test  = X.iloc[indices[-ntest:],:]
 Y_test  = Y[indices[-ntest:]]
 
 #Extra Trees Classification
@@ -137,6 +199,5 @@ extratrees.fit(X_train,Y_train)
 Y_predict = extratrees.predict(X_test)
 
 # Add the data to the matrix
-matrix.insert(matrix.shape[1],'Y_test_extratreeas',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_test_extratrees',np.array(Y_test,dtype=object))
 matrix.insert(matrix.shape[1],'Y_predict_extratrees',Y_predict)
-

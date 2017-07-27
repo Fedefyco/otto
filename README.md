@@ -32,8 +32,8 @@ X = Train and test sets
 + [ ] Model 19: Lasagne NN(GPU). 2-Layer. Bag of 120 NN runs with different number of epochs.
 + [ ] Model 20: Lasagne NN(GPU). 3-Layer. Bag of 120 NN runs with different number of epochs.
 + [ ] Model 21: XGboost. Trained on raw features. Extremely bagged (30 times averaged).
-+ [ ] Model 22: KNN on features X + int(X == 0)
-+ [ ] Model 23: KNN on features X + int(X == 0) + log(X + 1)
++ [x] Model 22: KNN on features X + int(X == 0)
++ [x] Model 23: KNN on features X + int(X == 0) + log(X + 1)
 + [x] Model 24: KNN on raw with 2 neighbours 
 + [x] Model 25: KNN on raw with 4 neighbours
 + [x] Model 26: KNN on raw with 8 neighbours

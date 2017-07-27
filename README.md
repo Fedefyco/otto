@@ -65,5 +65,5 @@ The average for the 3rd level we found better using a geometric mean of XGBOOST 
 
 Road Map:
 + [x] Modelli da 24 a 33 [atteggiani]
-+ [ ] Modelli marcati scikit [atteggiani]
++ [x] Modelli marcati scikit [atteggiani]
 + [ ] Modelli marcati in R [fedro]

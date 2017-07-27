@@ -17,7 +17,7 @@ X = Train and test sets
 + [x] Model 4: KNeighborsClassifier(scikit). Dataset: Scale( Log(X+1) )
 + [ ] Model 5: libfm. Dataset: Sparse(X). Each feature value is a unique level.
 + [ ] Model 6: H2O NN. Bag of 10 runs. Dataset: sqrt( X + 3/8) 
-+ [ ] Model 7: Multinomial Naive Bayes(scikit). Dataset: Log(X+1)
++ [x] Model 7: Multinomial Naive Bayes(scikit). Dataset: Log(X+1)
 + [ ] Model 8: Lasagne NN(CPU). Bag of 2 NN runs. First with Dataset Scale( Log(X+1) ) and second with Dataset Scale( X )
 + [ ] Model 9: Lasagne NN(CPU). Bag of 6 runs. Dataset: Scale( Log(X+1) )
 + [ ] Model 10: T-sne. Dimension reduction to 3 dimensions. Also stacked 2 kmeans features using the T-sne 3 dimensions. Dataset: Log(X+1)

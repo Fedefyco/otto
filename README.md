@@ -11,7 +11,7 @@ The 2nd level we trainned using 4 Kfold random indices. It provided us the abili
 Models and features used for 2nd level training:
 
 X = Train and test sets
-+ [ ] Model 1: RandomForest(R). Dataset: X
++ [x] Model 1: RandomForest(R). Dataset: X
 + [x] Model 2: Logistic Regression(scikit). Dataset: Log(X+1)
 + [x] Model 3: Extra Trees Classifier(scikit). Dataset: Log(X+1) (but could be raw)
 + [x] Model 4: KNeighborsClassifier(scikit). Dataset: Scale( Log(X+1) )

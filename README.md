@@ -67,3 +67,13 @@ Road Map:
 + [x] Modelli da 24 a 33 [atteggiani]
 + [x] Modelli marcati scikit [atteggiani]
 + [ ] Modelli marcati in R [fedro]
+
+Sostituire:
+
++ [ ] Model 6: H2O NN. Bag of 10 runs. Dataset: sqrt( X + 3/8) 
++ [ ] Model 8: Lasagne NN(CPU). Bag of 2 NN runs. First with Dataset Scale( Log(X+1) ) and second with Dataset Scale( X )
++ [ ] Model 9: Lasagne NN(CPU). Bag of 6 runs. Dataset: Scale( Log(X+1) )
++ [ ] Model 19: Lasagne NN(GPU). 2-Layer. Bag of 120 NN runs with different number of epochs.
++ [ ] Model 20: Lasagne NN(GPU). 3-Layer. Bag of 120 NN runs with different number of epochs.
+
+con le NN di Tensorflow (GPU) mantenendo le stesse strutture.

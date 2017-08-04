@@ -26,6 +26,67 @@ k = np.arange(1,11)
 ntest = 15
 matrix=pd.DataFrame()
 
+# =============================================================================
+# Model 10: t-SNE - Dataset: X
+# =============================================================================
+
+import rpy2.robjects as robjects
+from rpy2.robjects import pandas2ri
+import pandas as pd
+import numpy as np
+
+pandas2ri.activate()
+
+import rpy2.robjects.packages as rpackages
+
+utils = rpackages.importr('utils')
+utils.chooseCRANmirror(ind=1) # select the first mirror in the list
+utils.install_packages('Rtsne')
+
+df = data
+indices = np.random.permutation(len(df))
+
+train=df.iloc[indices[:-20000],1:94]
+rtrain = pandas2ri.py2ri(train)
+test=df.iloc[indices[-15:],1:94]
+
+
+robjects.r('''
+           f <- function(train,num_rows_sample,dim) {
+           
+                    library(Rtsne)
+                    
+                    set.seed(1)
+                    
+                    train_sample <- train[sample(1:nrow(train), size = num_rows_sample),]
+                    features     <- train_sample
+                    
+                    
+                    tsne <- Rtsne(as.matrix(features), check_duplicates = FALSE, pca = TRUE, 
+                                  perplexity=30, theta=0.5, dims=dim)
+                    
+                    embedding <- as.data.frame(tsne$Y)
+                    
+
+
+
+            }
+            ''')
+
+r_f = robjects.globalenv['f']
+r_Tsne=pandas2ri.ri2py((r_f(rtrain,len(train),2)))
+
+ytrain=df.iloc[indices[:-20000],94]
+
+
+from sklearn.neighbors import KNeighborsClassifier
+neigh = KNeighborsClassifier(n_neighbors=30)
+neigh.fit(train, ytrain) 
+
+neigh.predict(test)
+
+
+
 #==============================================================================
 # MODEL 24-33: KNN - Dataset: X
 #==============================================================================

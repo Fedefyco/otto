@@ -27,7 +27,7 @@ ntest = 15
 matrix=pd.DataFrame()
 
 # =============================================================================
-# Model 10: t-SNE - Dataset: X
+# Model 10: t-SNE - Dataset: log(X + 1)
 # =============================================================================
 
 import rpy2.robjects as robjects
@@ -43,7 +43,7 @@ utils = rpackages.importr('utils')
 utils.chooseCRANmirror(ind=1) # select the first mirror in the list
 utils.install_packages('Rtsne')
 
-df = data
+df = data1
 indices = np.random.permutation(len(df))
 
 train=df.iloc[indices[:-20000],1:94]
@@ -66,10 +66,6 @@ robjects.r('''
                                   perplexity=30, theta=0.5, dims=dim)
                     
                     embedding <- as.data.frame(tsne$Y)
-                    
-
-
-
             }
             ''')
 
@@ -77,7 +73,6 @@ r_f = robjects.globalenv['f']
 r_Tsne=pandas2ri.ri2py((r_f(rtrain,len(train),2)))
 
 ytrain=df.iloc[indices[:-20000],94]
-
 
 from sklearn.neighbors import KNeighborsClassifier
 neigh = KNeighborsClassifier(n_neighbors=30)

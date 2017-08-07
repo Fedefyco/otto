@@ -335,3 +335,42 @@ robjects.r('''
 
 r_g = robjects.globalenv['g']
 pred=pandas2ri.ri2py(r_g(rf_model,rtest))
+
+
+# =============================================================================
+# Model 1: SVM(from scikit) - Dataset: scale(X)
+# =============================================================================
+
+
+import numpy as np
+import pandas as pd
+from sklearn.svm import SVC
+from sklearn.preprocessing import scale
+from copy import deepcopy as dcopy
+
+#data1=pd.read_csv('train.csv', sep=',')
+#ntest = 15
+
+data2=dcopy(data1)
+data2.iloc[:,1:-1]=scale(data2.iloc[:,1:-1])
+
+X=data2.iloc[:,1:94]
+Y=data2.iloc[:,94]
+
+# Split data in train and test data
+# A random permutation, to split the data randomly
+np.random.seed(0)
+indices = np.random.permutation(len(Y))
+
+#per un modello di 20000 samples ci vogliono 5 minuti, per uno di 40000, ci vuole un'oretta.
+
+X_train = X.iloc[indices[:-40000],:]
+Y_train = Y[indices[:-40000]]
+X_test  = X.iloc[indices[-ntest:],:]
+Y_test  = Y[indices[-ntest:]]
+
+
+clf = SVC(gamma=2, C=1)
+clf.fit(X_train, Y_train) 
+
+clf.predict(X_test)

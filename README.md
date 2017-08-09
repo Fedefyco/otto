@@ -30,7 +30,7 @@ X = Train and test sets
 + [x] Model 17: Xgboost(R): Trainned Multiclass Soft-Prob. Dataset: (X, T-sne features, Some Kmeans clusters of log(1+X) )
 + [x] Model 18: Xgboost(R): Trainned Multiclass Soft-Prob. Dataset: (X, T-sne features, Some Kmeans clusters of Scale(X) )
 + [x] Model 19: Lasagne NN(GPU). 2-Layer. Bag of 120 NN runs with different number of epochs.
-+ [x Model 20: Lasagne NN(GPU). 3-Layer. Bag of 120 NN runs with different number of epochs.
++ [x] Model 20: Lasagne NN(GPU). 3-Layer. Bag of 120 NN runs with different number of epochs.
 + [x] Model 21: XGboost. Trained on raw features. Extremely bagged (30 times averaged).
 + [x] Model 22: KNN on features X + int(X == 0)
 + [x] Model 23: KNN on features X + int(X == 0) + log(X + 1)

@@ -446,3 +446,126 @@ clf.fit(X_train, Y_train)
 
 clf.predict(X_test)
 
+# =============================================================================
+# Model 14-18: Xgboost(from R) - Dataset: 
+# =============================================================================
+
+import rpy2.robjects as robjects
+from rpy2.robjects import pandas2ri
+import pandas as pd
+import numpy as np
+
+pandas2ri.activate()
+
+######################################
+import rpy2.robjects.packages as rpackages
+
+# import R's utility package
+utils = rpackages.importr('utils')
+utils.chooseCRANmirror(ind=1) # select the first mirror in the list
+#utils.install_packages('xgboost')
+#utils.install_packages('methods')
+#utils.install_packages('data.table')
+#utils.install_packages('magrittr')
+#utils.install_packages('Ckmeans.1d.dp')
+######################################
+
+#data=pd.read_csv('train.csv', sep=',')
+
+df = data
+indices = np.random.permutation(len(df))
+
+datatrain=df.iloc[indices[:5000],:]
+rdatatrain = pandas2ri.py2ri(datatrain)
+
+datatest=df.iloc[indices[-15:],:]
+rdatatest = pandas2ri.py2ri(datatest)
+
+#xtrain=df.iloc[indices[:5000],1:94]
+#rxtrain = pandas2ri.py2ri(xtrain)
+#ytrain=df.iloc[indices[:5000],94]
+#rytrain = pandas2ri.py2ri(ytrain)
+
+#test=df.iloc[indices[-15:],1:94]
+#rtest = pandas2ri.py2ri(test)
+
+
+robjects.r('''
+           f <- function(rdata,nround) {
+            
+            library(xgboost)
+            library(methods)
+            #install.packages("data.table", dependencies=TRUE)
+            library(data.table)
+            library(magrittr)
+            library(Ckmeans.1d.dp)
+
+            train<-data.table(rdata)
+            
+            # Delete ID column in training dataset
+            train[, id := NULL]
+            
+            # Save the name of the last column
+            nameLastCol <- names(train)[ncol(train)]
+            
+            # Convert from classes to numbers
+            y <- train[, nameLastCol, with = F][[1]] %>% gsub('Class_','',.) %>% {as.integer(.) -1}
+
+            train[, nameLastCol:=NULL, with = F]
+            
+            trainMatrix <- train[,lapply(.SD,as.numeric)] %>% as.matrix
+            
+            numberOfClasses <- max(y) + 1
+            param <- list("objective" = "multi:softprob",
+                          "eval_metric" = "mlogloss",
+                          "num_class" = numberOfClasses)
+            
+            
+            bst = xgboost(param=param, data = trainMatrix, label = y, nrounds=nround)
+
+            
+            }
+            ''')
+
+
+r_f = robjects.globalenv['f']
+rf_xgboostmodel=(r_f(rdatatrain,50))
+pandas2ri.ri2py(rf_xgboostmodel)
+
+robjects.r('''
+           g <- function(model,rdatatest,numberOfClasses) {
+                    
+                    library(xgboost)
+                    library(methods)
+                    library(data.table)
+                    library(magrittr)
+                    library(Ckmeans.1d.dp)
+
+           
+                    test<-data.table(rdatatest)
+                    
+                    # Delete ID column in training dataset
+                    test[, id := NULL]
+                    
+                    # Save the name of the last column
+                    nameLastCol <- names(test)[ncol(test)]
+                    
+                    # Convert from classes to numbers
+        
+                    test[, nameLastCol:=NULL, with = F]
+                    
+                    testMatrix <- test[,lapply(.SD,as.numeric)] %>% as.matrix
+
+
+                    pred <- predict(model, testMatrix)
+                    pred_ok<- matrix(pred,length(pred)/numberOfClasses, numberOfClasses,byrow = TRUE)
+
+            }
+            ''')
+
+r_g = robjects.globalenv['g']
+xgboostpred=pd.DataFrame(pandas2ri.ri2py(r_g(rf_xgboostmodel,rdatatest,9)))
+xgboostpred.columns = ['Class_1','Class_2','Class_3','Class_4','Class_5','Class_6','Class_7','Class_8','Class_9']
+
+
+xgboostpredcol=xgboostpred.idxmax(axis=1)

@@ -1,0 +1,468 @@
+#==============================================================================
+#==============================================================================
+# # OTTO PROGRAM
+#==============================================================================
+#==============================================================================
+import os
+import numpy as np
+import pandas as pd
+from copy import deepcopy as dcopy
+import tensorflow as tf
+
+#Setting working directory
+os.chdir(r'C:\ProgramData\Anaconda3\Spider_DATA\University\Lavoro_otto\Models\Python')
+
+#Import data
+data_raw=pd.read_csv('train.csv', sep=',')
+data_raw["target"]=data_raw["target"].map({"Class_{}".format(k):k-1 for k in range(1,10)})
+
+#DATA PREPROCESSING
+#Pre-processing data into Log(x+1)
+data_log=dcopy(data_raw)
+data_log.iloc[:,1:-1]=np.log(data_raw.iloc[:,1:-1]+1)
+
+#preprocessing data into Scale(X)
+from sklearn.preprocessing import scale
+data_scale=dcopy(data_raw)
+data_scale.iloc[:,1:-1]=scale(data_raw.iloc[:,1:-1])
+
+#preprocessing data into Scale(Log(X))
+data_scale_log=dcopy(data_log)
+data_scale_log.iloc[:,1:-1]=scale(data_log.iloc[:,1:-1])
+
+#preprocessing data into sqrt(X + 3/8)
+data_sqrt=dcopy(data_raw)
+data_sqrt.iloc[:,1:-1]=np.sqrt(data_raw.iloc[:,1:-1]+3/8)
+
+# Add feature int(X==0) called 'Num_0' to data
+data_featnum0=dcopy(data_raw)
+data_0 = np.count_nonzero(data_raw==0,axis=1) 
+data_featnum0.insert(data_featnum0.shape[1]-1,'Num_0',np.array(data_0,dtype=object))
+
+# Add feature log(x+1) to data_featnum0
+data_featnum0_featlog=dcopy(data_featnum0)
+for i in range(1,data_log.shape[1]-1):
+    data_featnum0_featlog.insert(data_featnum0_featlog.shape[1]-1,'Feat_{}_log'.format(i),np.array(data_log.iloc[:,i],dtype=object))
+
+
+#Creation of the matrix where I store all the test and prediction datas
+testsize = 15/data_raw.shape[0]
+trainsize = 2/3
+matrix=pd.DataFrame()
+
+from sklearn.model_selection import train_test_split
+
+#==============================================================================
+# MODEL 24-33: KNN - Dataset: X
+#==============================================================================
+data = dcopy(data_raw)
+from sklearn.neighbors import KNeighborsClassifier as knclass
+#For loop that executes all KNN from k = 2 to k = 1024
+for i in range(1,11):
+    # Split data in train and test data
+    X_train, X_test, Y_train, Y_test = train_test_split(data.iloc[:,1:-1], data["target"], test_size=testsize, train_size=trainsize, random_state=i)
+        
+    #KNN with k from 2 to 1024
+    knn = knclass(n_neighbors=2**i)
+    knn.fit(X_train, Y_train)
+    Y_predict = knn.predict(X_test)
+    
+# Add the data to the matrix
+    matrix.insert(matrix.shape[1],'Y_test_knn{}'.format(2**i),np.array(Y_test,dtype=object))       
+    matrix.insert(matrix.shape[1],'Y_predict_knn{}'.format(2**i),Y_predict)
+
+#==============================================================================
+# MODEL 4: KNEIGHBORS CLASSIFIER - Dataset: Scale(Log(x+1))
+#==============================================================================
+data = dcopy(data_scale_log)
+X_train, X_test, Y_train, Y_test = train_test_split(data.iloc[:,1:-1], data["target"], test_size=testsize, train_size=trainsize, random_state=0)
+
+#KNClassification
+knn=knclass()
+knn.fit(X_train,Y_train)
+Y_predict=knn.predict(X_test)
+
+matrix.insert(matrix.shape[1],'Y_test_knn_scale_log',np.array(Y_test,dtype=object))       
+matrix.insert(matrix.shape[1],'Y_predict_knn_scale_log',Y_predict)
+
+#==============================================================================
+# MODEL 22: KNN on features X + int(X == 0)
+#==============================================================================
+data = dcopy(data_featnum0)
+X_train, X_test, Y_train, Y_test = train_test_split(data.iloc[:,1:-1], data["target"], test_size=testsize, train_size=trainsize, random_state=0)
+
+#KNClassification
+knn=knclass()
+knn.fit(X_train,Y_train)
+Y_predict=knn.predict(X_test)
+
+matrix.insert(matrix.shape[1],'Y_test_knn+num0',np.array(Y_test,dtype=object))       
+matrix.insert(matrix.shape[1],'Y_predict_knn+num0',Y_predict)
+
+# =============================================================================
+# Model 23: KNN on features X + int(X == 0) + log(X + 1)
+# =============================================================================
+data = dcopy(data_featnum0_featlog)
+X_train, X_test, Y_train, Y_test = train_test_split(data.iloc[:,1:-1], data["target"], test_size=testsize, train_size=trainsize, random_state=0)
+
+#KNClassification
+knn=knclass()
+knn.fit(X_train,Y_train)
+Y_predict=knn.predict(X_test)
+
+matrix.insert(matrix.shape[1],'Y_test_knn+num0+log',np.array(Y_test,dtype=object))       
+matrix.insert(matrix.shape[1],'Y_predict_knn+num0+log',Y_predict)
+
+#==============================================================================
+# MODEL 2: LOG REGRESSION - Dataset: log(X+1))
+#==============================================================================
+data = dcopy(data_log)
+X_train, X_test, Y_train, Y_test = train_test_split(data.iloc[:,1:-1], data["target"], test_size=testsize, train_size=trainsize, random_state=0)
+
+from sklearn.linear_model import LogisticRegression as logit
+
+#Logistic Regression
+logistic = logit()
+logistic.fit(X_train,Y_train)
+Y_predict = logistic.predict(X_test)
+
+# Add the data to the matrix
+matrix.insert(matrix.shape[1],'Y_test_logit',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_predict_logit',Y_predict)
+
+#==============================================================================
+# MODEL 3: EXTRA TREES CLASSIFIER - Dataset: log(X+1)
+#==============================================================================
+data = dcopy(data_log)
+X_train, X_test, Y_train, Y_test = train_test_split(data.iloc[:,1:-1], data["target"], test_size=testsize, train_size=trainsize, random_state=0)
+
+from sklearn.ensemble import ExtraTreesClassifier as extreesclass
+
+#Extra Trees Classification
+extratrees = extreesclass()
+extratrees.fit(X_train,Y_train)
+Y_predict = extratrees.predict(X_test)
+
+# Add the data to the matrix
+matrix.insert(matrix.shape[1],'Y_test_extratrees',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_predict_extratrees',Y_predict)
+
+# =============================================================================
+# Model 7: Multinomial Naive Bayes - Dataset: Log(X+1)
+# =============================================================================
+data = dcopy(data_log)
+X_train, X_test, Y_train, Y_test = train_test_split(data.iloc[:,1:-1], data["target"], test_size=testsize, train_size=trainsize, random_state=0)
+
+from sklearn.naive_bayes import MultinomialNB as MNB
+
+#Multinomial Naive Bayes Classification
+multinb = MNB()
+multinb.fit(X_train,Y_train)
+Y_predict = multinb.predict(X_test)
+
+# Add the data to the matrix
+matrix.insert(matrix.shape[1],'Y_test_multinb',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_predict_multinb',Y_predict)
+
+# =============================================================================
+# Model 1: RandomForest(R) - Dataset: X
+# =============================================================================
+
+import rpy2.robjects as robjects
+from rpy2.robjects import pandas2ri
+import pandas as pd
+import numpy as np
+
+pandas2ri.activate()
+
+df = dcopy(data)
+indices = np.random.permutation(len(df))
+
+train=df.iloc[indices[:-20000],0:94]
+test=df.iloc[indices[:-20000],0:93]
+
+#train=df.iloc[random.sample(range(1,60000), 5000),0:94]
+#test=df.iloc[random.sample(range(1,60000), 100),0:93]
+
+rtrain = pandas2ri.py2ri(train)
+print(rtrain)
+rtest = pandas2ri.py2ri(test)
+print(rtest)
+
+robjects.r('''
+           f <- function(train) {
+           
+                    library(randomForest)
+                    train1.rf <- randomForest(target ~ ., data = train, importance = TRUE, do.trace = 100)
+
+            }
+            ''')
+
+r_f = robjects.globalenv['f']
+rf_model=(r_f(rtrain))
+
+
+robjects.r('''
+           g <- function(model,test) {
+
+                    pred <- as.data.frame(predict(model, test))
+
+            }
+            ''')
+
+r_g = robjects.globalenv['g']
+pred=pandas2ri.ri2py(r_g(rf_model,rtest))
+
+# =============================================================================
+# Model 8: Tensorflow NN. Bag of 2 runs. First with Dataset: Scale( Log(X+1) ) and second with Dataset: Scale( X )
+# =============================================================================
+'''reference at https://www.kaggle.com/xenocide/tensorflow-neural-network-tutorial-with-iris-data'''
+
+data=[dcopy(data_scale),dcopy(data_scale_log)]
+dataname=["data_scale","data_scale_log"]
+#Create the matrix where I store the data
+#predictions = pd.DataFrame()
+predictions_proba = pd.DataFrame()
+#Initialize the dataset to set not changing X_test and Y_test
+X_train, X_test, Y_train, Y_test = train_test_split(data[0].iloc[:,1:-1], data[0]["target"], test_size=testsize, train_size=trainsize, random_state=0)
+#Repeat for both datasets
+
+for i in [0,1]:
+    data[i] = data[i].drop(list(Y_test.index))
+    
+    np.random.seed(i)
+    indices = np.random.permutation(data[i].shape[0])
+    
+    X_train = data[i].iloc[indices[-round(data[i].shape[0]*trainsize):],1:-1]
+    Y_train = data[i].iloc[indices[-round(data[i].shape[0]*trainsize):],-1]
+
+    columns = data[i].columns[1:-1]
+    feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
+    
+    def input_fn(df,labels):
+        feature_cols = {k:tf.constant(df[k].values,shape = [df[k].size,1]) for k in columns}
+        label = tf.constant(labels.values, shape = [labels.size,1])
+        return feature_cols,label
+
+    classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20],n_classes = 9)
+
+    classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
+
+#    Check precision of the fitting
+    
+#    #ev = classifier.evaluate(input_fn=lambda: input_fn(X_test,y_test),steps=1)
+#    #print(ev)
+
+    def input_predict(df):
+        feature_cols = {k:tf.constant(df[k].values,shape = [df[k].size,1]) for k in columns}
+        return feature_cols
+
+    pred_proba = classifier.predict_proba(input_fn=lambda: input_predict(X_test))
+    predictions_proba.insert(predictions_proba.shape[1],dataname[i],list(pred_proba))
+#    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
+#    predictions.insert(predictions.shape[1],dataname[i],list(pred))
+    
+#Bagging
+    
+def bag_proba(df):
+    bag_class = list()
+    for row in range(df.shape[0]):
+        mean_prob = np.mean(df.values[row,:])
+        for i, j in enumerate(mean_prob):
+            if j == max(mean_prob):
+                bag_class.append(i)
+    return pd.DataFrame(bag_class)
+            
+Y_predict = bag_proba(predictions_proba)
+                        
+matrix.insert(matrix.shape[1],'Y_test_tfNN-2x',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_predict_tfNN-2x',Y_predict)
+
+# =============================================================================
+# Model 9: Tensorflow NN. Bag of 6 runs. Dataset: Scale( Log(X+1) )            
+# =============================================================================
+data = dcopy(data_scale_log)
+#Initialize the dataset to set not changing X_test and Y_test
+X_train, X_test, Y_train, Y_test = train_test_split(data.iloc[:,1:-1], data["target"], test_size=testsize, train_size=trainsize, random_state=0)
+
+#predictions = pd.DataFrame()
+predictions_proba = pd.DataFrame()
+columns = data.columns[1:-1]
+feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
+
+#Run 6 times
+nruns=6
+run=0
+while run < nruns:
+    data=dcopy(data_scale_log)
+    data = data.drop(list(Y_test.index))
+    
+    np.random.seed(run)
+    indices = np.random.permutation(data.shape[0])
+    
+    X_train = data.iloc[indices[-round(data.shape[0]*trainsize):],1:-1]
+    Y_train = data.iloc[indices[-round(data.shape[0]*trainsize):],-1]
+    
+    classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20],n_classes = 9)
+    classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
+    
+    #    Check precision of the fitting
+    #    #ev = classifier.evaluate(input_fn=lambda: input_fn(X_test,y_test),steps=1)
+    #    #print(ev)
+    
+    pred_proba = classifier.predict_proba(input_fn=lambda: input_predict(X_test))
+    predictions_proba.insert(predictions_proba.shape[1],"run{}".format(run+1),list(pred_proba))
+#    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
+#    predictions.insert(predictions.shape[1],"run{}".format(run+1),list(pred))
+    run+=1
+
+#Bagging
+Y_predict = bag_proba(predictions_proba)
+
+matrix.insert(matrix.shape[1],'Y_test_tfNN-6x',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_predict_tfNN-6x',Y_predict)
+
+# =============================================================================
+# Model 6: Tensorflow NN. Bag of 10 runs. Dataset: sqrt( X + 3/8)
+# =============================================================================
+data = dcopy(data_sqrt)
+#Initialize the dataset to set not changing X_test and Y_test
+X_train, X_test, Y_train, Y_test = train_test_split(data.iloc[:,1:-1], data["target"], test_size=testsize, train_size=trainsize, random_state=0)
+
+#predictions = pd.DataFrame()
+predictions_proba = pd.DataFrame()
+columns = data.columns[1:-1]
+feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
+
+#Run 10 times
+nruns=10
+run=0
+while run < nruns:
+    data=dcopy(data_sqrt)
+    data = data.drop(list(Y_test.index))
+    
+    np.random.seed(run)
+    indices = np.random.permutation(data.shape[0])
+    
+    X_train = data.iloc[indices[-round(data.shape[0]*trainsize):],1:-1]
+    Y_train = data.iloc[indices[-round(data.shape[0]*trainsize):],-1]
+    
+    classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20],n_classes = 9)
+    classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
+    
+    #    Check precision of the fitting
+    #    #ev = classifier.evaluate(input_fn=lambda: input_fn(X_test,y_test),steps=1)
+    #    #print(ev)
+    
+    pred_proba = classifier.predict_proba(input_fn=lambda: input_predict(X_test))
+    predictions_proba.insert(predictions_proba.shape[1],"run{}".format(run+1),list(pred_proba))
+#    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
+#    predictions.insert(predictions.shape[1],"run{}".format(run+1),list(pred))
+    run+=1
+
+#Bagging
+Y_predict = bag_proba(predictions_proba)
+
+matrix.insert(matrix.shape[1],'Y_test_tfNN-10x',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_predict_tfNN-10x',Y_predict)
+
+# =============================================================================
+# Model 19: Tensorflow NN(GPU). 2-Layer. Bag of 120 NN runs with different number of epochs.
+# =============================================================================
+data=dcopy(data_raw)
+#Initialize the dataset to set not changing X_test and Y_test
+X_train, X_test, Y_train, Y_test = train_test_split(data.iloc[:,1:-1], data["target"], test_size=testsize, train_size=trainsize, random_state=0)
+
+predictions = pd.DataFrame()
+#predictions_proba = pd.DataFrame()
+columns = data.columns[1:-1]
+feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
+
+#Run 120 times with 2-layers
+nruns=120
+run=0
+while run < nruns:
+    print("----------ITERATION N. {} - 2lay----------".format(run+1))
+    data=dcopy(data_sqrt)
+    data = data.drop(list(Y_test.index))
+    
+    np.random.seed(run)
+    indices = np.random.permutation(data.shape[0])
+    
+    X_train = data.iloc[indices[-round(data.shape[0]*trainsize):],1:-1]
+    Y_train = data.iloc[indices[-round(data.shape[0]*trainsize):],-1]
+    
+    classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20,10],n_classes = 9)
+    classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
+    
+    #    Check precision of the fitting
+    #    #ev = classifier.evaluate(input_fn=lambda: input_fn(X_test,y_test),steps=1)
+    #    #print(ev)
+    
+#    pred_proba = classifier.predict_proba(input_fn=lambda: input_predict(X_test))
+#    predictions_proba.insert(predictions_proba.shape[1],"run{}".format(run+1),list(pred_proba))
+    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
+    predictions.insert(predictions.shape[1],"run{}".format(run+1),list(pred))
+    run+=1
+
+#Bagging
+from statistics import mode
+    
+def bag_num(df):
+    bag_class = list()
+    class_mode = df.mode(axis=1).iloc[:,0]
+    for row in range(class_mode.shape[0]):
+        class_mode_int = int(class_mode.iloc[row])
+        bag_class.append(class_mode_int)
+    return pd.DataFrame(bag_class)
+
+Y_predict = bag_num(predictions_proba)
+
+matrix.insert(matrix.shape[1],'Y_test_tfNN-120x-2lay',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_predict_tfNN-120x-2lay',Y_predict)
+
+# =============================================================================
+# Model 20: Tensorflow NN(GPU). 3-Layer. Bag of 120 NN runs with different number of epochs.
+# =============================================================================
+data=dcopy(data_raw)
+#Initialize the dataset to set not changing X_test and Y_test
+X_train, X_test, Y_train, Y_test = train_test_split(data.iloc[:,1:-1], data["target"], test_size=testsize, train_size=trainsize, random_state=0)
+
+predictions = pd.DataFrame()
+#predictions_proba = pd.DataFrame()
+columns = data.columns[1:-1]
+feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
+
+#Run 120 times with 2-layers
+nruns=120
+run=0
+while run < nruns:
+    print("----------ITERATION N. {} - 3lay----------".format(run+1))
+    data=dcopy(data_sqrt)
+    data = data.drop(list(Y_test.index))
+    
+    np.random.seed(run)
+    indices = np.random.permutation(data.shape[0])
+    
+    X_train = data.iloc[indices[-round(data.shape[0]*trainsize):],1:-1]
+    Y_train = data.iloc[indices[-round(data.shape[0]*trainsize):],-1]
+    
+    classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20,10,10],n_classes = 9)
+    classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
+    
+    #    Check precision of the fitting
+    #    #ev = classifier.evaluate(input_fn=lambda: input_fn(X_test,y_test),steps=1)
+#        print(ev)
+    
+#    pred_proba = classifier.predict_proba(input_fn=lambda: input_predict(X_test))
+#    predictions_proba.insert(predictions_proba.shape[1],"run{}".format(run+1),list(pred_proba))
+    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
+    predictions.insert(predictions.shape[1],"run{}".format(run+1),list(pred))
+    run+=1
+
+#Bagging
+
+Y_predict = bag_num(predictions_proba)
+
+matrix.insert(matrix.shape[1],'Y_test_tfNN-120x-3lay',np.array(Y_test,dtype=object))
+matrix.insert(matrix.shape[1],'Y_predict_tfNN-120x-3lay',Y_predict)

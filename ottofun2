@@ -1,0 +1,112 @@
+#==============================================================================
+#==============================================================================
+# # OTTO PROGRAM
+#==============================================================================
+#==============================================================================
+
+# =============================================================================
+# Libraries
+# =============================================================================
+
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import scale
+from copy import deepcopy as dcopy
+from sklearn.neighbors import KNeighborsClassifier as knclass
+# =============================================================================
+# Datasets
+# =============================================================================
+
+#Import data
+data_csv_train=pd.read_csv('train.csv', sep=',')
+data_csv_train["target"]=data_csv_train["target"].map({"Class_{}".format(k):k-1 for k in range(1,10)})
+data_csv_test=pd.read_csv('test.csv', sep=',')
+
+data_target = data_csv_train["target"]
+
+data_raw_all=data_csv_train.iloc[:,1:-1].append(data_csv_test.iloc[:,1:94])
+data_raw_train=data_raw_all.iloc[0:len(data_csv_train),:]
+data_raw_test=data_raw_all.iloc[len(data_csv_train):len(data_csv_train)+len(data_csv_test),:]
+
+data_tsne_train=pd.read_csv('train_tsne.csv', sep=',',header=None)
+data_tsne_test=pd.read_csv('test_tsne.csv', sep=',',header=None)
+
+
+#DATA PREPROCESSING
+#Pre-processing data into Log(x+1)
+#data_log=dcopy(data_raw_train)
+#data_log.iloc[:,1:-1]=np.log(data_raw_train.iloc[:,1:-1]+1)
+
+data_log_all=np.log(data_raw_all+1)
+data_log_train=data_log_all.iloc[0:len(data_raw_train),:]
+data_log_test=data_log_all.iloc[len(data_raw_train):len(data_raw_train)+len(data_raw_test),:]
+
+#preprocessing data into Scale(X)
+#data_scale=dcopy(data_raw_train)
+#data_scale.iloc[:,1:-1]=scale(data_raw_train.iloc[:,1:-1])
+data_scale_all=pd.DataFrame(scale(data_raw_all))
+data_scale_train=data_scale_all.iloc[0:len(data_raw_train),:]
+data_scale_test=data_scale_all.iloc[len(data_raw_train):len(data_raw_train)+len(data_raw_test),:]
+
+#preprocessing data into Scale(Log(X + 1))
+#data_scale_log=dcopy(data_log)
+#data_scale_log.iloc[:,1:-1]=scale(data_log.iloc[:,1:-1])
+
+data_scalelog_all=pd.DataFrame(scale(data_log_all))
+data_scalelog_train=data_scalelog_all.iloc[0:len(data_raw_train),:]
+data_scalelog_test=data_scalelog_all.iloc[len(data_raw_train):len(data_raw_train)+len(data_raw_test),:]
+
+#preprocessing data into sqrt(X + 3/8)
+#data_sqrt=dcopy(data_raw_train)
+#data_sqrt.iloc[:,1:-1]=np.sqrt(data_raw_train.iloc[:,1:-1]+3/8)
+data_sqrt_all=np.sqrt(data_raw_all + 3/8)
+data_sqrt_train=data_sqrt_all.iloc[0:len(data_raw_train),:]
+data_sqrt_test=data_sqrt_all.iloc[len(data_raw_train):len(data_raw_train)+len(data_raw_test),:]
+
+# Add feature int(X==0) called 'Num_0' to data
+#data_featnum0=dcopy(data_raw_train)
+#data_0 = np.count_nonzero(data_raw_train==0,axis=1) 
+#data_featnum0.insert(data_featnum0.shape[1]-1,'Num_0',np.array(data_0,dtype=object))
+data_0_all = np.count_nonzero(data_raw_all==0,axis=1) 
+data_0_train = np.count_nonzero(data_raw_train==0,axis=1) 
+data_0_test = np.count_nonzero(data_raw_test==0,axis=1) 
+
+# Add feature log(x+1) to data_featnum0
+#data_featnum0_featlog=dcopy(data_featnum0)
+#for i in range(1,data_log.shape[1]-1):
+#    data_featnum0_featlog.insert(data_featnum0_featlog.shape[1]-1,'Feat_{}_log'.format(i),np.array(data_log.iloc[:,i],dtype=object))
+
+
+#Creation of the matrix where I store all the test and prediction datas
+testsize = 15/data_raw_train.shape[0]
+trainsize = 2/3
+matrix_train=pd.DataFrame()
+matrix_test=pd.DataFrame()
+
+#==============================================================================
+# MODEL 24-33: KNN - Dataset: X
+#==============================================================================
+data = data_raw_train
+data_test = data_raw_test
+#from sklearn.neighbors import KNeighborsClassifier as knclass
+#For loop that executes all KNN from k = 2 to k = 1024
+for i in range(1,11):
+    # Split data in train and test data
+    X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=i)
+        
+    #KNN with k from 2 to 1024
+    knn = knclass(n_neighbors=2**i)
+    knn.fit(X_train, Y_train)
+    Ytrain_predict = knn.predict(data)
+    Ytest_predict = knn.predict(data_test)
+    
+# Add the data to the matrix
+    #matrix.insert(matrix.shape[1],'Y_test_knn{}'.format(2**i),np.array(Y_test,dtype=object))       
+    matrix_train.insert(matrix_train.shape[1],'Y_predict_knn{}'.format(2**i),Ytrain_predict)
+    matrix_test.insert(matrix_test.shape[1],'Y_predict_knn{}'.format(2**i),Ytest_predict)
+
+
+matrix_train.to_csv('matrix_train_knn.csv')
+matrix_test.to_csv('matrix_test_knn.csv')

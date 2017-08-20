@@ -110,3 +110,92 @@ for i in range(1,11):
 
 matrix_train.to_csv('matrix_train_knn.csv')
 matrix_test.to_csv('matrix_test_knn.csv')
+
+#==============================================================================
+# MODEL 4: KNEIGHBORS CLASSIFIER - Dataset: Scale(Log(x+1))
+#==============================================================================
+data = data_scalelog_train
+data_test = data_scalelog_test
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+
+#KNClassification
+knn=knclass()
+knn.fit(X_train,Y_train)
+
+Ytrain_predict = knn.predict(data)
+Ytest_predict = knn.predict(data_test)
+
+matrix_train.insert(matrix_train.shape[1],'Y_test_knn_scale_log',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_predict_knn_scale_log',Ytest_predict)
+
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_knn_scale_log.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_knn_scale_log.csv')
+
+#==============================================================================
+# MODEL 22: KNN on features X + int(X == 0)
+#==============================================================================
+data=data_raw_train.join(pd.DataFrame(data_0_train))
+data_test=data_raw_test.join(pd.DataFrame(data_0_test))
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+
+#KNClassification
+knn=knclass()
+knn.fit(X_train,Y_train)
+
+Ytrain_predict = knn.predict(data)
+Ytest_predict = knn.predict(data_test)
+
+matrix_train.insert(matrix_train.shape[1],'Y_test_knn+num0',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_predict_knn+num0',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_knn_x_0.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_knn_x_0.csv')
+
+# =============================================================================
+# Model 23: KNN on features X + int(X == 0) + log(X + 1)
+# =============================================================================
+
+data=pd.concat([data_raw_train, pd.DataFrame(data_0_train),data_log_train], axis=1)
+data_test=pd.concat([data_raw_test, pd.DataFrame(data_0_test),data_log_test], axis=1)
+
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+
+#KNClassification
+knn=knclass()
+knn.fit(X_train,Y_train)
+
+Ytrain_predict = knn.predict(data)
+Ytest_predict = knn.predict(data_test)
+
+matrix_train.insert(matrix_train.shape[1],'Y_test_knn+num0+log',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_predict_knn+num0+log',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_knn_x_0_log.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_knn_x_0_log.csv')
+
+
+#==============================================================================
+# MODEL 2: LOG REGRESSION - Dataset: log(X+1))
+#==============================================================================
+data = data_scalelog_train
+data_test = data_scalelog_test
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+
+#Logistic Regression
+logistic = logit()
+logistic.fit(X_train,Y_train)
+
+Ytrain_predict = logistic.predict(data)
+Ytest_predict = logistic.predict(data_test)
+
+# Add the data to the matrix
+matrix_train.insert(matrix_train.shape[1],'Y_test_logit',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_logit',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_logit_log.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_logit_log.csv')

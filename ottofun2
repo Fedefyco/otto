@@ -13,10 +13,15 @@ import pandas as pd
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import scale
-from copy import deepcopy as dcopy
 from sklearn.neighbors import KNeighborsClassifier as knclass
 from sklearn.linear_model import LogisticRegression as logit
+from sklearn.naive_bayes import MultinomialNB as MNB
 
+import rpy2.robjects as robjects
+from rpy2.robjects import pandas2ri
+import rpy2.robjects.packages as rpackages
+
+pandas2ri.activate()
 # =============================================================================
 # Datasets
 # =============================================================================
@@ -201,3 +206,77 @@ matrix_test.insert(matrix_test.shape[1],'Y_predict_logit',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_logit_log.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_logit_log.csv')
+
+# =============================================================================
+# Model 7: Multinomial Naive Bayes - Dataset: Log(X+1)
+# =============================================================================
+data = data_log_train
+data_test = data_log_test
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+
+#Multinomial Naive Bayes Classification
+multinb = MNB()
+multinb.fit(X_train,Y_train)
+
+Ytrain_predict = multinb.predict(data)
+Ytest_predict = multinb.predict(data_test)
+
+# Add the data to the matrix
+matrix_train.insert(matrix_train.shape[1],'Y_test_multinb',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_multinb',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_mnb_log.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_mnb_log.csv')
+
+# =============================================================================
+# Model 1: RandomForest(R) - Dataset: X
+# =============================================================================
+data = data_raw_train
+data_test = data_raw_test
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+
+dtest=pd.concat([X_train,Y_train], axis=1)
+rtrain = pandas2ri.py2ri(dtest)
+print(rtrain)
+rtest = pandas2ri.py2ri(data_test)
+print(rtest)
+
+robjects.r('''
+           f <- function(train) {
+           
+                    library(randomForest)
+                    train1.rf <- randomForest(target ~ ., data=train, importance = TRUE, do.trace = 100)
+
+            }
+            ''')
+
+utils = rpackages.importr('utils')
+utils.chooseCRANmirror(ind=1) # select the first mirror in the list
+#utils.install_packages('randomForest')
+
+r_f = robjects.globalenv['f']
+rf_model=(r_f(rtrain))
+
+
+robjects.r('''
+           g <- function(model,test) {
+
+                    pred <- as.data.frame(predict(model, test))
+
+            }
+            ''')
+
+r_g = robjects.globalenv['g']
+
+
+Ytrain_predict = pandas2ri.ri2py(r_g(rf_model,pandas2ri.py2ri(data)))
+Ytest_predict = pandas2ri.ri2py(r_g(rf_model,pandas2ri.py2ri(data_test)))
+
+# Add the data to the matrix
+matrix_train.insert(matrix_train.shape[1],'Y_test_r_rf',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_r_rf',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_r_rf_x.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_rf_x.csv')

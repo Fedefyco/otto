@@ -18,6 +18,7 @@ from sklearn.linear_model import LogisticRegression as logit
 from sklearn.naive_bayes import MultinomialNB as MNB
 from sklearn.ensemble import ExtraTreesClassifier as extreesclass
 from sklearn.svm import SVC
+from copy import deepcopy as dcopy
 
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
@@ -29,6 +30,8 @@ pandas2ri.activate()
 # =============================================================================
 
 #Import data
+data_csvn_train=pd.read_csv('train.csv', sep=',')
+
 data_csv_train=pd.read_csv('train.csv', sep=',')
 data_csv_train["target"]=data_csv_train["target"].map({"Class_{}".format(k):k-1 for k in range(1,10)})
 data_csv_test=pd.read_csv('test.csv', sep=',')
@@ -256,6 +259,73 @@ matrix_test.insert(matrix_test.shape[1],'Y_predict_multinb',Ytest_predict)
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_mnb_log.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_mnb_log.csv')
 
+
+# =============================================================================
+# Model 11: SVM(from scikit) - Dataset: scale(X)
+# =============================================================================
+data = data_scale_train
+data_test = data_scale_test
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=18)
+
+clf = SVC(gamma=2, C=1)
+clf.fit(X_train, Y_train) 
+
+Ytrain_predict = clf.predict(data)
+Ytest_predict = clf.predict(data_test)
+
+# Add the data to the matrix
+matrix_train.insert(matrix_train.shape[1],'Y_test_svc_scalex',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_scalex',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_scalex.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_scalex.csv')
+
+# =============================================================================
+# Model 12: SVM(from scikit) - Dataset: X + T-SNE
+# =============================================================================
+
+data = pd.concat([pd.DataFrame(scale(data_raw_train)), pd.DataFrame(scale(data_tsne_train))], axis=1)
+data_test = pd.concat([pd.DataFrame(scale(data_raw_test)), pd.DataFrame(scale(data_tsne_test))], axis=1)
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=19)
+
+
+clf = SVC(gamma=2, C=1)
+clf.fit(X_train, Y_train) 
+
+Ytrain_predict = clf.predict(data)
+Ytest_predict = clf.predict(data_test)
+
+# Add the data to the matrix
+matrix_train.insert(matrix_train.shape[1],'Y_test_svc_x_tsne',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_x_tsne',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_x_tsne.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_x_tsne.csv')
+
+# =============================================================================
+# Model 13: SVM(from scikit) - Dataset: Log(X + T-SNE)
+# =============================================================================
+
+data = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_train))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
+data_test = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_test))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=20)
+
+clf = SVC(gamma=2, C=1)
+clf.fit(X_train, Y_train) 
+
+Ytrain_predict = clf.predict(data)
+Ytest_predict = clf.predict(data_test)
+
+# Add the data to the matrix
+matrix_train.insert(matrix_train.shape[1],'Y_test_svc_log_x_tsne',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_log_x_tsne',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_log_x_tsne.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_log_x_tsne.csv')
+
 # =============================================================================
 # Model 1: RandomForest(R) - Dataset: X
 # =============================================================================
@@ -309,68 +379,388 @@ pd.DataFrame(Ytrain_predict).to_csv('matrix_train_r_rf_x.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_rf_x.csv')
 
 # =============================================================================
-# Model 11: SVM(from scikit) - Dataset: scale(X)
+# Model 14-18: Xgboost(from R) - Dataset: X
 # =============================================================================
-data = data_scale_train
-data_test = data_scale_test
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=18)
+#df = data
+#indices = np.random.permutation(len(df))
+#
+#datatrain=df.iloc[indices[:5000],:]
+#rdatatrain = pandas2ri.py2ri(dtest)
+#
+#datatest=df.iloc[indices[-15:],:]
+#rdatatest = pandas2ri.py2ri(data_test)
 
-clf = SVC(gamma=2, C=1)
-clf.fit(X_train, Y_train) 
+data = data_raw_train
+data_test = data_raw_test
 
-Ytrain_predict = clf.predict(data)
-Ytest_predict = clf.predict(data_test)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_csvn_train.iloc[:,94], test_size=testsize, train_size=trainsize, random_state=17)
+
+dtest=pd.concat([X_train,Y_train], axis=1)
+r_xgb1_datatrain = pandas2ri.py2ri(dtest)
+print(r_xgb1_datatrain)
+r_xgb1_datatest = pandas2ri.py2ri(data_test)
+print(r_xgb1_datatest)
+
+######################################
+# import R's utility package
+utils = rpackages.importr('utils')
+utils.chooseCRANmirror(ind=1) # select the first mirror in the list
+#utils.install_packages('xgboost')
+#utils.install_packages('methods')
+#utils.install_packages('data.table')
+#utils.install_packages('magrittr')
+#utils.install_packages('Ckmeans.1d.dp')
+######################################
+
+
+
+robjects.r('''
+           f <- function(rdata,nround) {
+            
+            library(xgboost)
+            library(methods)
+            #install.packages("data.table", dependencies=TRUE)
+            library(data.table)
+            library(magrittr)
+            library(Ckmeans.1d.dp)
+
+            train<-data.table(rdata)
+            
+            # Delete ID column in training dataset
+            #train[, id := NULL]
+            
+            # Save the name of the last column
+            nameLastCol <- names(train)[ncol(train)]
+            
+            # Convert from classes to numbers
+            y <- train[, nameLastCol, with = F][[1]] %>% gsub('Class_','',.) %>% {as.integer(.) -1}
+
+
+            
+            train[, nameLastCol:=NULL, with = F]
+            
+            trainMatrix <- train[,lapply(.SD,as.numeric)] %>% as.matrix
+            
+            numberOfClasses <- max(y) + 1
+            param <- list("objective" = "multi:softprob",
+                          "eval_metric" = "mlogloss",
+                          "num_class" = numberOfClasses)
+            
+            
+            bst = xgboost(param=param, data = trainMatrix, label = y, nrounds=nround)
+
+            
+            }
+            ''')
+
+
+r_f = robjects.globalenv['f']
+rf_xgboostmodel=(r_f(r_xgb1_datatrain,50))
+pandas2ri.ri2py(rf_xgboostmodel)
+
+robjects.r('''
+           g <- function(model,rdatatest,numberOfClasses) {
+                    
+                    library(xgboost)
+                    library(methods)
+                    library(data.table)
+                    library(magrittr)
+                    library(Ckmeans.1d.dp)
+
+           
+                    test<-data.table(rdatatest)
+                    
+                    # Delete ID column in training dataset
+                    #test[, id := NULL]
+                    
+                    # Save the name of the last column
+                    nameLastCol <- names(test)[ncol(test)]
+                    
+                    # Convert from classes to numbers
+        
+                    #test[, nameLastCol:=NULL, with = F]
+                    
+                    testMatrix <- test[,lapply(.SD,as.numeric)] %>% as.matrix
+
+
+                    pred <- predict(model, testMatrix)
+                    pred_ok<- matrix(pred,length(pred)/numberOfClasses, numberOfClasses,byrow = TRUE)
+
+            }
+            ''')
+
+r_g = robjects.globalenv['g']
+
+xgboostpredtrain=pd.DataFrame(pandas2ri.ri2py(r_g(rf_xgboostmodel,pandas2ri.py2ri(data),9)))
+xgboostpredtrain.columns = ['Class_1','Class_2','Class_3','Class_4','Class_5','Class_6','Class_7','Class_8','Class_9']
+Ytrain_predict=xgboostpredtrain.idxmax(axis=1)
+
+xgboostpredtest=pd.DataFrame(pandas2ri.ri2py(r_g(rf_xgboostmodel,pandas2ri.py2ri(data_test),9)))
+xgboostpredtest.columns = ['Class_1','Class_2','Class_3','Class_4','Class_5','Class_6','Class_7','Class_8','Class_9']
+Ytest_predict=xgboostpredtest.idxmax(axis=1)
 
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_svc_scalex',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_scalex',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_test_r_xgb1',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_r_xgb1',Ytest_predict)
 
-pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_scalex.csv')
-pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_scalex.csv')
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_r_xgb1_x.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_xgb1_x.csv')
 
 # =============================================================================
-# Model 12: SVM(from scikit) - Dataset: X + T-SNE
+# Model 14-18: Xgboost(from R) - Dataset: X + Tsne
 # =============================================================================
 
-data = pd.concat([data_raw_train, pd.DataFrame(scale(data_tsne_train))], axis=1)
-data_test = pd.concat([data_raw_test, pd.DataFrame(scale(data_tsne_test))], axis=1)
+#df = data
+#indices = np.random.permutation(len(df))
+#
+#datatrain=df.iloc[indices[:5000],:]
+#rdatatrain = pandas2ri.py2ri(dtest)
+#
+#datatest=df.iloc[indices[-15:],:]
+#rdatatest = pandas2ri.py2ri(data_test)
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=19)
+data = pd.concat([ pd.DataFrame(scale(data_raw_train)), pd.DataFrame(scale(data_tsne_train))], axis=1)
+data_test = pd.concat([ pd.DataFrame(scale(data_raw_test)), pd.DataFrame(scale(data_tsne_test))], axis=1)
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_csvn_train.iloc[:,94], test_size=testsize, train_size=trainsize, random_state=17)
+
+dtest=pd.concat([X_train,Y_train], axis=1)
+r_xgb1_datatrain = pandas2ri.py2ri(dtest)
+print(r_xgb1_datatrain)
+r_xgb1_datatest = pandas2ri.py2ri(data_test)
+print(r_xgb1_datatest)
+
+######################################
+# import R's utility package
+utils = rpackages.importr('utils')
+utils.chooseCRANmirror(ind=1) # select the first mirror in the list
+#utils.install_packages('xgboost')
+#utils.install_packages('methods')
+#utils.install_packages('data.table')
+#utils.install_packages('magrittr')
+#utils.install_packages('Ckmeans.1d.dp')
+######################################
 
 
-clf = SVC(gamma=2, C=1)
-clf.fit(X_train, Y_train) 
 
-Ytrain_predict = clf.predict(data)
-Ytest_predict = clf.predict(data_test)
+robjects.r('''
+           f <- function(rdata,nround) {
+            
+            library(xgboost)
+            library(methods)
+            #install.packages("data.table", dependencies=TRUE)
+            library(data.table)
+            library(magrittr)
+            library(Ckmeans.1d.dp)
+
+            train<-data.table(rdata)
+            
+            # Delete ID column in training dataset
+            #train[, id := NULL]
+            
+            # Save the name of the last column
+            nameLastCol <- names(train)[ncol(train)]
+            
+            # Convert from classes to numbers
+            y <- train[, nameLastCol, with = F][[1]] %>% gsub('Class_','',.) %>% {as.integer(.) -1}
+
+
+            
+            train[, nameLastCol:=NULL, with = F]
+            
+            trainMatrix <- train[,lapply(.SD,as.numeric)] %>% as.matrix
+            
+            numberOfClasses <- max(y) + 1
+            param <- list("objective" = "multi:softprob",
+                          "eval_metric" = "mlogloss",
+                          "num_class" = numberOfClasses)
+            
+            
+            bst = xgboost(param=param, data = trainMatrix, label = y, nrounds=nround)
+
+            
+            }
+            ''')
+
+
+r_f = robjects.globalenv['f']
+rf_xgboostmodel=(r_f(r_xgb1_datatrain,50))
+pandas2ri.ri2py(rf_xgboostmodel)
+
+robjects.r('''
+           g <- function(model,rdatatest,numberOfClasses) {
+                    
+                    library(xgboost)
+                    library(methods)
+                    library(data.table)
+                    library(magrittr)
+                    library(Ckmeans.1d.dp)
+
+           
+                    test<-data.table(rdatatest)
+                    
+                    # Delete ID column in training dataset
+                    #test[, id := NULL]
+                    
+                    # Save the name of the last column
+                    nameLastCol <- names(test)[ncol(test)]
+                    
+                    # Convert from classes to numbers
+        
+                    #test[, nameLastCol:=NULL, with = F]
+                    
+                    testMatrix <- test[,lapply(.SD,as.numeric)] %>% as.matrix
+
+
+                    pred <- predict(model, testMatrix)
+                    pred_ok<- matrix(pred,length(pred)/numberOfClasses, numberOfClasses,byrow = TRUE)
+
+            }
+            ''')
+
+r_g = robjects.globalenv['g']
+
+xgboostpredtrain=pd.DataFrame(pandas2ri.ri2py(r_g(rf_xgboostmodel,pandas2ri.py2ri(data),9)))
+xgboostpredtrain.columns = ['Class_1','Class_2','Class_3','Class_4','Class_5','Class_6','Class_7','Class_8','Class_9']
+Ytrain_predict=xgboostpredtrain.idxmax(axis=1)
+
+xgboostpredtest=pd.DataFrame(pandas2ri.ri2py(r_g(rf_xgboostmodel,pandas2ri.py2ri(data_test),9)))
+xgboostpredtest.columns = ['Class_1','Class_2','Class_3','Class_4','Class_5','Class_6','Class_7','Class_8','Class_9']
+Ytest_predict=xgboostpredtest.idxmax(axis=1)
 
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_svc_x_tsne',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_x_tsne',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_test_r_xgb2_x_tsne',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_r_xgb2_x_tsne',Ytest_predict)
 
-pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_x_tsne.csv')
-pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_x_tsne.csv')
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_r_xgb2_x_tsne.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_xgb2_x_tsne.csv')
 
 # =============================================================================
-# Model 13: SVM(from scikit) - Dataset: Log(X + T-SNE)
+# Model 14-18: Xgboost(from R) - Dataset: log(X + Tsne)
 # =============================================================================
+
+#df = data
+#indices = np.random.permutation(len(df))
+#
+#datatrain=df.iloc[indices[:5000],:]
+#rdatatrain = pandas2ri.py2ri(dtest)
+#
+#datatest=df.iloc[indices[-15:],:]
+#rdatatest = pandas2ri.py2ri(data_test)
 
 data = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_train))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
 data_test = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_test))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=20)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_csvn_train.iloc[:,94], test_size=testsize, train_size=trainsize, random_state=17)
 
-clf = SVC(gamma=2, C=1)
-clf.fit(X_train, Y_train) 
+dtest=pd.concat([X_train,Y_train], axis=1)
+r_xgb1_datatrain = pandas2ri.py2ri(dtest)
+print(r_xgb1_datatrain)
+r_xgb1_datatest = pandas2ri.py2ri(data_test)
+print(r_xgb1_datatest)
 
-Ytrain_predict = clf.predict(data)
-Ytest_predict = clf.predict(data_test)
+######################################
+# import R's utility package
+utils = rpackages.importr('utils')
+utils.chooseCRANmirror(ind=1) # select the first mirror in the list
+#utils.install_packages('xgboost')
+#utils.install_packages('methods')
+#utils.install_packages('data.table')
+#utils.install_packages('magrittr')
+#utils.install_packages('Ckmeans.1d.dp')
+######################################
+
+
+
+robjects.r('''
+           f <- function(rdata,nround) {
+            
+            library(xgboost)
+            library(methods)
+            #install.packages("data.table", dependencies=TRUE)
+            library(data.table)
+            library(magrittr)
+            library(Ckmeans.1d.dp)
+
+            train<-data.table(rdata)
+            
+            # Delete ID column in training dataset
+            #train[, id := NULL]
+            
+            # Save the name of the last column
+            nameLastCol <- names(train)[ncol(train)]
+            
+            # Convert from classes to numbers
+            y <- train[, nameLastCol, with = F][[1]] %>% gsub('Class_','',.) %>% {as.integer(.) -1}
+
+
+            
+            train[, nameLastCol:=NULL, with = F]
+            
+            trainMatrix <- train[,lapply(.SD,as.numeric)] %>% as.matrix
+            
+            numberOfClasses <- max(y) + 1
+            param <- list("objective" = "multi:softprob",
+                          "eval_metric" = "mlogloss",
+                          "num_class" = numberOfClasses)
+            
+            
+            bst = xgboost(param=param, data = trainMatrix, label = y, nrounds=nround)
+
+            
+            }
+            ''')
+
+
+r_f = robjects.globalenv['f']
+rf_xgboostmodel=(r_f(r_xgb1_datatrain,50))
+pandas2ri.ri2py(rf_xgboostmodel)
+
+robjects.r('''
+           g <- function(model,rdatatest,numberOfClasses) {
+                    
+                    library(xgboost)
+                    library(methods)
+                    library(data.table)
+                    library(magrittr)
+                    library(Ckmeans.1d.dp)
+
+           
+                    test<-data.table(rdatatest)
+                    
+                    # Delete ID column in training dataset
+                    #test[, id := NULL]
+                    
+                    # Save the name of the last column
+                    nameLastCol <- names(test)[ncol(test)]
+                    
+                    # Convert from classes to numbers
+        
+                    #test[, nameLastCol:=NULL, with = F]
+                    
+                    testMatrix <- test[,lapply(.SD,as.numeric)] %>% as.matrix
+
+
+                    pred <- predict(model, testMatrix)
+                    pred_ok<- matrix(pred,length(pred)/numberOfClasses, numberOfClasses,byrow = TRUE)
+
+            }
+            ''')
+
+r_g = robjects.globalenv['g']
+
+xgboostpredtrain=pd.DataFrame(pandas2ri.ri2py(r_g(rf_xgboostmodel,pandas2ri.py2ri(data),9)))
+xgboostpredtrain.columns = ['Class_1','Class_2','Class_3','Class_4','Class_5','Class_6','Class_7','Class_8','Class_9']
+Ytrain_predict=xgboostpredtrain.idxmax(axis=1)
+
+xgboostpredtest=pd.DataFrame(pandas2ri.ri2py(r_g(rf_xgboostmodel,pandas2ri.py2ri(data_test),9)))
+xgboostpredtest.columns = ['Class_1','Class_2','Class_3','Class_4','Class_5','Class_6','Class_7','Class_8','Class_9']
+Ytest_predict=xgboostpredtest.idxmax(axis=1)
 
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_svc_log_x_tsne',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_log_x_tsne',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_test_r_xgb3_log_x_tsne',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_r_xgb3_log_x_tsne',Ytest_predict)
 
-pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_log_x_tsne.csv')
-pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_log_x_tsne.csv')
-
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_r_xgb3_log_x_tsne.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_xgb3_log_x_tsne.csv')

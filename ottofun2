@@ -16,6 +16,8 @@ from sklearn.preprocessing import scale
 from sklearn.neighbors import KNeighborsClassifier as knclass
 from sklearn.linear_model import LogisticRegression as logit
 from sklearn.naive_bayes import MultinomialNB as MNB
+from sklearn.ensemble import ExtraTreesClassifier as extreesclass
+from sklearn.svm import SVC
 
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
@@ -89,6 +91,9 @@ data_0_test = np.count_nonzero(data_raw_test==0,axis=1)
 #Creation of the matrix where I store all the test and prediction datas
 testsize = 15/data_raw_train.shape[0]
 trainsize = 2/3
+
+svc_trainsize=20000
+
 matrix_train=pd.DataFrame()
 matrix_test=pd.DataFrame()
 
@@ -124,7 +129,7 @@ matrix_test.to_csv('matrix_test_knn.csv')
 data = data_scalelog_train
 data_test = data_scalelog_test
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=11)
 
 #KNClassification
 knn=knclass()
@@ -146,7 +151,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_knn_scale_log.csv')
 data=data_raw_train.join(pd.DataFrame(data_0_train))
 data_test=data_raw_test.join(pd.DataFrame(data_0_test))
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=12)
 
 #KNClassification
 knn=knclass()
@@ -169,7 +174,7 @@ data=pd.concat([data_raw_train, pd.DataFrame(data_0_train),data_log_train], axis
 data_test=pd.concat([data_raw_test, pd.DataFrame(data_0_test),data_log_test], axis=1)
 
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=13)
 
 #KNClassification
 knn=knclass()
@@ -191,7 +196,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_knn_x_0_log.csv')
 data = data_scalelog_train
 data_test = data_scalelog_test
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=14)
 
 #Logistic Regression
 logistic = logit()
@@ -207,13 +212,35 @@ matrix_test.insert(matrix_test.shape[1],'Y_predict_logit',Ytest_predict)
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_logit_log.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_logit_log.csv')
 
+#==============================================================================
+# MODEL 3: EXTRA TREES CLASSIFIER - Dataset: log(X+1)
+#==============================================================================
+data = data_log_train
+data_test = data_log_test
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=15)
+
+#Extra Trees Classification
+extratrees = extreesclass()
+extratrees.fit(X_train,Y_train)
+
+Ytrain_predict = extratrees.predict(data)
+Ytest_predict = extratrees.predict(data_test)
+
+# Add the data to the matrix
+matrix_train.insert(matrix_train.shape[1],'Y_test_extratrees',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_extratrees',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_extratrees_log.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_extratrees_log.csv')
+
 # =============================================================================
 # Model 7: Multinomial Naive Bayes - Dataset: Log(X+1)
 # =============================================================================
 data = data_log_train
 data_test = data_log_test
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=16)
 
 #Multinomial Naive Bayes Classification
 multinb = MNB()
@@ -235,7 +262,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_mnb_log.csv')
 data = data_raw_train
 data_test = data_raw_test
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=0)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=17)
 
 dtest=pd.concat([X_train,Y_train], axis=1)
 rtrain = pandas2ri.py2ri(dtest)
@@ -280,3 +307,69 @@ matrix_test.insert(matrix_test.shape[1],'Y_predict_r_rf',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_r_rf_x.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_rf_x.csv')
+
+# =============================================================================
+# Model 11: SVM(from scikit) - Dataset: scale(X)
+# =============================================================================
+data = data_scale_train
+data_test = data_scale_test
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=18)
+
+clf = SVC(gamma=2, C=1)
+clf.fit(X_train, Y_train) 
+
+Ytrain_predict = clf.predict(data)
+Ytest_predict = clf.predict(data_test)
+
+# Add the data to the matrix
+matrix_train.insert(matrix_train.shape[1],'Y_test_svc_scalex',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_scalex',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_scalex.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_scalex.csv')
+
+# =============================================================================
+# Model 12: SVM(from scikit) - Dataset: X + T-SNE
+# =============================================================================
+
+data = pd.concat([data_raw_train, pd.DataFrame(scale(data_tsne_train))], axis=1)
+data_test = pd.concat([data_raw_test, pd.DataFrame(scale(data_tsne_test))], axis=1)
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=19)
+
+
+clf = SVC(gamma=2, C=1)
+clf.fit(X_train, Y_train) 
+
+Ytrain_predict = clf.predict(data)
+Ytest_predict = clf.predict(data_test)
+
+# Add the data to the matrix
+matrix_train.insert(matrix_train.shape[1],'Y_test_svc_x_tsne',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_x_tsne',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_x_tsne.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_x_tsne.csv')
+
+# =============================================================================
+# Model 13: SVM(from scikit) - Dataset: Log(X + T-SNE)
+# =============================================================================
+
+data = pd.concat([data_raw_train, pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
+data_test = pd.concat([data_raw_test, pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
+
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=20)
+
+clf = SVC(gamma=2, C=1)
+clf.fit(X_train, Y_train) 
+
+Ytrain_predict = clf.predict(data)
+Ytest_predict = clf.predict(data_test)
+
+# Add the data to the matrix
+matrix_train.insert(matrix_train.shape[1],'Y_test_svc_log_x_tsne',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_log_x_tsne',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_log_x_tsne.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_log_x_tsne.csv')

@@ -266,7 +266,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_mnb_log.csv')
 data = data_scale_train
 data_test = data_scale_test
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=18)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=17)
 
 clf = SVC(gamma=2, C=1)
 clf.fit(X_train, Y_train) 
@@ -288,7 +288,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_scalex.csv')
 data = pd.concat([pd.DataFrame(scale(data_raw_train)), pd.DataFrame(scale(data_tsne_train))], axis=1)
 data_test = pd.concat([pd.DataFrame(scale(data_raw_test)), pd.DataFrame(scale(data_tsne_test))], axis=1)
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=19)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=18)
 
 
 clf = SVC(gamma=2, C=1)
@@ -311,7 +311,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_x_tsne.csv')
 data = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_train))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
 data_test = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_test))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=20)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=19)
 
 clf = SVC(gamma=2, C=1)
 clf.fit(X_train, Y_train) 
@@ -332,7 +332,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_log_x_tsne.csv')
 data = data_raw_train
 data_test = data_raw_test
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=17)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=20)
 
 dtest=pd.concat([X_train,Y_train], axis=1)
 rtrain = pandas2ri.py2ri(dtest)
@@ -394,7 +394,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_rf_x.csv')
 data = data_raw_train
 data_test = data_raw_test
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_csvn_train.iloc[:,94], test_size=testsize, train_size=trainsize, random_state=17)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_csvn_train.iloc[:,94], test_size=testsize, train_size=trainsize, random_state=21)
 
 dtest=pd.concat([X_train,Y_train], axis=1)
 r_xgb1_datatrain = pandas2ri.py2ri(dtest)
@@ -523,7 +523,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_xgb1_x.csv')
 data = pd.concat([ pd.DataFrame(scale(data_raw_train)), pd.DataFrame(scale(data_tsne_train))], axis=1)
 data_test = pd.concat([ pd.DataFrame(scale(data_raw_test)), pd.DataFrame(scale(data_tsne_test))], axis=1)
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_csvn_train.iloc[:,94], test_size=testsize, train_size=trainsize, random_state=17)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_csvn_train.iloc[:,94], test_size=testsize, train_size=trainsize, random_state=22)
 
 dtest=pd.concat([X_train,Y_train], axis=1)
 r_xgb1_datatrain = pandas2ri.py2ri(dtest)
@@ -652,7 +652,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_xgb2_x_tsne.csv')
 data = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_train))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
 data_test = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_test))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, data_csvn_train.iloc[:,94], test_size=testsize, train_size=trainsize, random_state=17)
+X_train, X_test, Y_train, Y_test = train_test_split(data, data_csvn_train.iloc[:,94], test_size=testsize, train_size=trainsize, random_state=23)
 
 dtest=pd.concat([X_train,Y_train], axis=1)
 r_xgb1_datatrain = pandas2ri.py2ri(dtest)

@@ -356,8 +356,8 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_x_tsne.csv')
 # Model 13: SVM(from scikit) - Dataset: Log(X + T-SNE)
 # =============================================================================
 
-data = pd.concat([data_raw_train, pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
-data_test = pd.concat([data_raw_test, pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
+data = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_train))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
+data_test = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_test))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
 
 X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=20)
 
@@ -373,3 +373,4 @@ matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_log_x_tsne',Ytest_predict
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_log_x_tsne.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_log_x_tsne.csv')
+

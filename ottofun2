@@ -103,28 +103,28 @@ matrix_test=pd.DataFrame()
 #==============================================================================
 # MODEL 24-33: KNN - Dataset: X
 #==============================================================================
-data = data_raw_train
-data_test = data_raw_test
-#from sklearn.neighbors import KNeighborsClassifier as knclass
-#For loop that executes all KNN from k = 2 to k = 1024
-for i in range(1,11):
-    # Split data in train and test data
-    X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=i)
-        
-    #KNN with k from 2 to 1024
-    knn = knclass(n_neighbors=2**i)
-    knn.fit(X_train, Y_train)
-    Ytrain_predict = knn.predict(data)
-    Ytest_predict = knn.predict(data_test)
-    
-# Add the data to the matrix
-    #matrix.insert(matrix.shape[1],'Y_test_knn{}'.format(2**i),np.array(Y_test,dtype=object))       
-    matrix_train.insert(matrix_train.shape[1],'Y_predict_knn{}'.format(2**i),Ytrain_predict)
-    matrix_test.insert(matrix_test.shape[1],'Y_predict_knn{}'.format(2**i),Ytest_predict)
-
-
-matrix_train.to_csv('matrix_train_knn.csv')
-matrix_test.to_csv('matrix_test_knn.csv')
+#data = data_raw_train
+#data_test = data_raw_test
+##from sklearn.neighbors import KNeighborsClassifier as knclass
+##For loop that executes all KNN from k = 2 to k = 1024
+#for i in range(1,11):
+#    # Split data in train and test data
+#    X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=i)
+#        
+#    #KNN with k from 2 to 1024
+#    knn = knclass(n_neighbors=2**i)
+#    knn.fit(X_train, Y_train)
+#    Ytrain_predict = knn.predict(data)
+#    Ytest_predict = knn.predict(data_test)
+#    
+## Add the data to the matrix
+#    #matrix.insert(matrix.shape[1],'Y_test_knn{}'.format(2**i),np.array(Y_test,dtype=object))       
+#    matrix_train.insert(matrix_train.shape[1],'Y_predict_knn{}'.format(2**i),Ytrain_predict)
+#    matrix_test.insert(matrix_test.shape[1],'Y_predict_knn{}'.format(2**i),Ytest_predict)
+#
+#
+#matrix_train.to_csv('matrix_train_knn.csv')
+#matrix_test.to_csv('matrix_test_knn.csv')
 
 #==============================================================================
 # MODEL 4: KNEIGHBORS CLASSIFIER - Dataset: Scale(Log(x+1))
@@ -309,7 +309,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_x_tsne.csv')
 # =============================================================================
 
 data = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_train))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
-data_test = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_test))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
+data_test = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_test))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_test))))], axis=1)
 
 X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=19)
 
@@ -650,7 +650,7 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_xgb2_x_tsne.csv')
 #rdatatest = pandas2ri.py2ri(data_test)
 
 data = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_train))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
-data_test = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_test))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_train))))], axis=1)
+data_test = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_test))), pd.DataFrame(scale(np.log(1+np.abs(data_tsne_test))))], axis=1)
 
 X_train, X_test, Y_train, Y_test = train_test_split(data, data_csvn_train.iloc[:,94], test_size=testsize, train_size=trainsize, random_state=23)
 

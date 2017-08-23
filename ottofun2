@@ -764,3 +764,292 @@ matrix_test.insert(matrix_test.shape[1],'Y_predict_r_xgb3_log_x_tsne',Ytest_pred
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_r_xgb3_log_x_tsne.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_xgb3_log_x_tsne.csv')
+
+# =============================================================================
+# Model 8: Tensorflow NN. Bag of 2 runs. First with Dataset: Scale( Log(X+1) ) and second with Dataset: Scale( X )
+# =============================================================================
+'''reference at https://www.kaggle.com/xenocide/tensorflow-neural-network-tutorial-with-iris-data'''
+
+data = [data_scalelog_train,data_scale_train]
+data_test = [data_scalelog_test,data_scale_test]
+
+dataname=["data_scale","data_scalelog"]
+#Create the matrix where I store the data
+#predictions = pd.DataFrame()
+predictions_proba_train = pd.DataFrame()
+predictions_proba_test = pd.DataFrame()
+
+#Repeat for both datasets
+for i in [0,1]:
+    X_train, X_test, Y_train, Y_test = train_test_split(data[i], data_target, test_size=testsize, train_size=trainsize, random_state=24+i)
+    
+    columns = data[i].columns
+    feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
+    
+    def input_fn(df,labels):
+        feature_cols = {k:tf.constant(df[k].values,shape = [df[k].size,1]) for k in columns}
+        label = tf.constant(labels.values, shape = [labels.size,1])
+        return feature_cols,label
+
+    classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20],n_classes = 9)
+    classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
+
+#    Check precision of the fitting
+    
+#    #ev = classifier.evaluate(input_fn=lambda: input_fn(X_test,y_test),steps=1)
+#    #print(ev)
+
+    def input_predict(df):
+        feature_cols = {k:tf.constant(df[k].values,shape = [df[k].size,1]) for k in columns}
+        return feature_cols
+
+    pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data[i]))
+    predictions_proba_train.insert(predictions_proba_train.shape[1],dataname[i],list(pred_proba_train))
+    
+    pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data_test[i]))
+    predictions_proba_test.insert(predictions_proba_test.shape[1],dataname[i],list(pred_proba_test))
+#    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
+#    predictions.insert(predictions.shape[1],dataname[i],list(pred))
+    
+#Bagging
+    
+def bag_proba(df):
+    bag_class = list()
+    for row in range(df.shape[0]):
+        mean_prob = np.mean(df.values[row,:])
+        for i, j in enumerate(mean_prob):
+            if j == max(mean_prob):
+                bag_class.append(i)
+    return pd.DataFrame(bag_class)
+            
+Ytrain_predict = bag_proba(predictions_proba_train)
+Ytest_predict = bag_proba(predictions_proba_test)
+                    
+matrix_train.insert(matrix_train.shape[1],'Y_test_tfNN-2x',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_predict_tfNN-2x',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_tfNN-2x.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_tfNN-2x.csv')
+    
+# =============================================================================
+# Model 9: Tensorflow NN. Bag of 6 runs. Dataset: Scale( Log(X+1) )            
+# =============================================================================
+data = data_scalelog_train
+data_test = data_scalelog_test
+
+#predictions = pd.DataFrame()
+predictions_proba_train = pd.DataFrame()
+predictions_proba_test = pd.DataFrame()
+
+columns = data.columns
+feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
+
+#Run 6 times
+nruns=6
+run=0
+while run < nruns:
+    X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=26+run)
+    
+    classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20],n_classes = 9)
+    classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
+    
+    #    Check precision of the fitting
+    #    #ev = classifier.evaluate(input_fn=lambda: input_fn(X_test,y_test),steps=1)
+    #    #print(ev)
+    pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
+    predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
+    
+    pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data_test))
+    predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
+    
+#    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
+#    predictions.insert(predictions.shape[1],"run{}".format(run+1),list(pred))
+    run+=1
+
+#Bagging
+Ytrain_predict = bag_proba(predictions_proba_train)
+Ytest_predict = bag_proba(predictions_proba_test)
+                    
+matrix_train.insert(matrix_train.shape[1],'Y_test_tfNN-6x',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_predict_tfNN-6x',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_tfNN-6x.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_tfNN-6x.csv')  
+  
+# =============================================================================
+# Model 6: Tensorflow NN. Bag of 10 runs. Dataset: sqrt( X + 3/8)
+# =============================================================================
+data = data_sqrt_train
+data_test = data_sqrt_test
+
+#predictions = pd.DataFrame()
+predictions_proba_train = pd.DataFrame()
+predictions_proba_test = pd.DataFrame()
+
+columns = data.columns
+feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
+
+#Run 10 times
+nruns=10
+run=0
+while run < nruns:
+    X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=32+run)
+    
+    classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20],n_classes = 9)
+    classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
+    
+    #    Check precision of the fitting
+    #    #ev = classifier.evaluate(input_fn=lambda: input_fn(X_test,y_test),steps=1)
+    #    #print(ev)
+    pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
+    predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
+    
+    pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data_test))
+    predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
+    
+#    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
+#    predictions.insert(predictions.shape[1],"run{}".format(run+1),list(pred))
+    run+=1
+
+#Bagging
+Ytrain_predict = bag_proba(predictions_proba_train)
+Ytest_predict = bag_proba(predictions_proba_test)
+                    
+matrix_train.insert(matrix_train.shape[1],'Y_test_tfNN-10x',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_predict_tfNN-10x',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_tfNN-10x.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_tfNN-10x.csv')  
+
+# =============================================================================
+# Model 19: Tensorflow NN(GPU). 2-Layer. Bag of 120 NN runs with different number of epochs.
+# =============================================================================
+data = data_raw_train
+data_test = data_raw_test
+
+#predictions = pd.DataFrame()
+predictions_proba_train = pd.DataFrame()
+predictions_proba_test = pd.DataFrame()
+predictions_train = pd.DataFrame()
+predictions_test = pd.DataFrame()
+
+columns = data.columns
+feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
+
+#Run 120 times
+nruns=120
+run=0
+while run < nruns:
+    print("----------ITERATION N. {} - 2lay----------".format(run+1))
+    X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=42+run)
+    
+    classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20,10],n_classes = 9)
+    classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
+    
+    #    Check precision of the fitting
+    #    #ev = classifier.evaluate(input_fn=lambda: input_fn(X_test,y_test),steps=1)
+    #    #print(ev)
+    pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
+    predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
+    
+    pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data_test))
+    predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
+    
+#    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
+#    predictions.insert(predictions.shape[1],"run{}".format(run+1),list(pred))
+    run+=1
+
+    pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
+    pred_train = classifier.predict_classes(input_fn=lambda: input_predict(data))
+    predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
+    predictions_train.insert(predictions_train.shape[1],"run{}".format(run+1),list(pred_train))
+    
+    pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data))
+    pred_test = classifier.predict_classes(input_fn=lambda: input_predict(data))
+    predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
+    predictions_test.insert(predictions_test.shape[1],"run{}".format(run+1),list(pred_test))
+
+
+#Bagging
+def bag_num(df):
+    bag_class = list()
+    class_mode = df.mode(axis=1).iloc[:,0]
+    for row in range(class_mode.shape[0]):
+        class_mode_int = int(class_mode.iloc[row])
+        bag_class.append(class_mode_int)
+    return pd.DataFrame(bag_class)    
+    
+Ytrain_predict = bag_num(predictions_train)
+Ytest_predict = bag_num(predictions_test)
+
+#Ytrain_predict = bag_proba(predictions_proba_train)
+#Ytest_predict = bag_proba(predictions_proba_test)
+                    
+matrix_train.insert(matrix_train.shape[1],'Y_test_tfNN-120x-2lay',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_predict_tfNN-120x-2lay',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_tfNN-120x-2lay.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_tfNN-120x-2lay.csv')  
+
+# =============================================================================
+# Model 20: Tensorflow NN(GPU). 3-Layer. Bag of 120 NN runs with different number of epochs.
+# =============================================================================
+data = data_raw_train
+data_test = data_raw_test
+
+#predictions = pd.DataFrame()
+predictions_proba_train = pd.DataFrame()
+predictions_proba_test = pd.DataFrame()
+predictions_train = pd.DataFrame()
+predictions_test = pd.DataFrame()
+
+columns = data.columns
+feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
+
+#Run 120 times
+nruns=120
+run=0
+while run < nruns:
+    print("----------ITERATION N. {} - 3lay----------".format(run+1))
+    X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=162+run)
+    
+    classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20,10,10],n_classes = 9)
+    classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
+    
+    #    Check precision of the fitting
+    #    #ev = classifier.evaluate(input_fn=lambda: input_fn(X_test,y_test),steps=1)
+    #    #print(ev)
+    pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
+    predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
+    
+    pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data_test))
+    predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
+    
+#    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
+#    predictions.insert(predictions.shape[1],"run{}".format(run+1),list(pred))
+    run+=1
+
+    pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
+    pred_train = classifier.predict_classes(input_fn=lambda: input_predict(data))
+    predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
+    predictions_train.insert(predictions_train.shape[1],"run{}".format(run+1),list(pred_train))
+    
+    pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data))
+    pred_test = classifier.predict_classes(input_fn=lambda: input_predict(data))
+    predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
+    predictions_test.insert(predictions_test.shape[1],"run{}".format(run+1),list(pred_test))
+
+
+#Bagging
+
+Ytrain_predict = bag_num(predictions_train)
+Ytest_predict = bag_num(predictions_test)
+
+#Ytrain_predict = bag_proba(predictions_proba_train)
+#Ytest_predict = bag_proba(predictions_proba_test)
+                    
+matrix_train.insert(matrix_train.shape[1],'Y_test_tfNN-120x-3lay',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_predict_tfNN-120x-3lay',Ytest_predict)
+
+pd.DataFrame(Ytrain_predict).to_csv('matrix_train_tfNN-120x-3lay.csv')
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_tfNN-120x-3lay.csv')  

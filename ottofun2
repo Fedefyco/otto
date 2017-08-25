@@ -18,7 +18,7 @@ from sklearn.linear_model import LogisticRegression as logit
 from sklearn.naive_bayes import MultinomialNB as MNB
 from sklearn.ensemble import ExtraTreesClassifier as extreesclass
 from sklearn.svm import SVC
-from copy import deepcopy as dcopy
+
 
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
@@ -103,28 +103,28 @@ matrix_test=pd.DataFrame()
 #==============================================================================
 # MODEL 24-33: KNN - Dataset: X
 #==============================================================================
-#data = data_raw_train
-#data_test = data_raw_test
-##from sklearn.neighbors import KNeighborsClassifier as knclass
-##For loop that executes all KNN from k = 2 to k = 1024
-#for i in range(1,11):
-#    # Split data in train and test data
-#    X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=i)
-#        
-#    #KNN with k from 2 to 1024
-#    knn = knclass(n_neighbors=2**i)
-#    knn.fit(X_train, Y_train)
-#    Ytrain_predict = knn.predict(data)
-#    Ytest_predict = knn.predict(data_test)
-#    
-## Add the data to the matrix
-#    #matrix.insert(matrix.shape[1],'Y_test_knn{}'.format(2**i),np.array(Y_test,dtype=object))       
-#    matrix_train.insert(matrix_train.shape[1],'Y_predict_knn{}'.format(2**i),Ytrain_predict)
-#    matrix_test.insert(matrix_test.shape[1],'Y_predict_knn{}'.format(2**i),Ytest_predict)
-#
-#
-#matrix_train.to_csv('matrix_train_knn.csv')
-#matrix_test.to_csv('matrix_test_knn.csv')
+data = data_raw_train
+data_test = data_raw_test
+#from sklearn.neighbors import KNeighborsClassifier as knclass
+#For loop that executes all KNN from k = 2 to k = 1024
+for i in range(1,11):
+    # Split data in train and test data
+    X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=i)
+        
+    #KNN with k from 2 to 1024
+    knn = knclass(n_neighbors=2**i)
+    knn.fit(X_train, Y_train)
+    Ytrain_predict = knn.predict(data)
+    Ytest_predict = knn.predict(data_test)
+    
+# Add the data to the matrix
+    #matrix.insert(matrix.shape[1],'Y_test_knn{}'.format(2**i),np.array(Y_test,dtype=object))       
+    matrix_train.insert(matrix_train.shape[1],'Y_predict_knn{}'.format(2**i),Ytrain_predict)
+    matrix_test.insert(matrix_test.shape[1],'Y_predict_knn{}'.format(2**i),Ytest_predict)
+
+
+matrix_train.to_csv('matrix_train_knn.csv')
+matrix_test.to_csv('matrix_test_knn.csv')
 
 #==============================================================================
 # MODEL 4: KNEIGHBORS CLASSIFIER - Dataset: Scale(Log(x+1))
@@ -141,8 +141,11 @@ knn.fit(X_train,Y_train)
 Ytrain_predict = knn.predict(data)
 Ytest_predict = knn.predict(data_test)
 
-matrix_train.insert(matrix_train.shape[1],'Y_test_knn_scale_log',Ytrain_predict)       
-matrix_test.insert(matrix_test.shape[1],'Y_predict_knn_scale_log',Ytest_predict)
+Ytrain_predict.columns=['Y_train_knn_scale_log']
+Ytest_predict.columns=['Y_test_knn_scale_log']
+
+matrix_train.insert(matrix_train.shape[1],'Y_train_knn_scale_log',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_test_knn_scale_log',Ytest_predict)
 
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_knn_scale_log.csv')
@@ -163,8 +166,11 @@ knn.fit(X_train,Y_train)
 Ytrain_predict = knn.predict(data)
 Ytest_predict = knn.predict(data_test)
 
-matrix_train.insert(matrix_train.shape[1],'Y_test_knn+num0',Ytrain_predict)       
-matrix_test.insert(matrix_test.shape[1],'Y_predict_knn+num0',Ytest_predict)
+Ytrain_predict.columns=['Y_train_knn_x_0']
+Ytest_predict.columns=['Y_test_knn_x_0']
+
+matrix_train.insert(matrix_train.shape[1],'Y_train_knn_x_0',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_test_knn_x_0',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_knn_x_0.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_knn_x_0.csv')
@@ -186,8 +192,11 @@ knn.fit(X_train,Y_train)
 Ytrain_predict = knn.predict(data)
 Ytest_predict = knn.predict(data_test)
 
-matrix_train.insert(matrix_train.shape[1],'Y_test_knn+num0+log',Ytrain_predict)       
-matrix_test.insert(matrix_test.shape[1],'Y_predict_knn+num0+log',Ytest_predict)
+Ytrain_predict.columns=['Y_train_knn_x_0_log']
+Ytest_predict.columns=['Y_test_knn_x_0_log']
+
+matrix_train.insert(matrix_train.shape[1],'Y_train_knn_x_0_log',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_test_knn_x_0_log',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_knn_x_0_log.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_knn_x_0_log.csv')
@@ -208,9 +217,12 @@ logistic.fit(X_train,Y_train)
 Ytrain_predict = logistic.predict(data)
 Ytest_predict = logistic.predict(data_test)
 
+Ytrain_predict.columns=['Y_train_logit']
+Ytest_predict.columns=['Y_test_logit']
+
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_logit',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_logit',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_logit',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_test_logit',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_logit_log.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_logit_log.csv')
@@ -230,9 +242,12 @@ extratrees.fit(X_train,Y_train)
 Ytrain_predict = extratrees.predict(data)
 Ytest_predict = extratrees.predict(data_test)
 
+Ytrain_predict.columns=['Y_train_extratrees']
+Ytest_predict.columns=['Y_test_extratrees']
+
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_extratrees',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_extratrees',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_extratrees',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_test_extratrees',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_extratrees_log.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_extratrees_log.csv')
@@ -252,9 +267,12 @@ multinb.fit(X_train,Y_train)
 Ytrain_predict = multinb.predict(data)
 Ytest_predict = multinb.predict(data_test)
 
+Ytrain_predict.columns=['Y_train_multinb']
+Ytest_predict.columns=['Y_test_multinb']
+
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_multinb',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_multinb',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_multinb',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_test_multinb',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_mnb_log.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_mnb_log.csv')
@@ -274,9 +292,12 @@ clf.fit(X_train, Y_train)
 Ytrain_predict = clf.predict(data)
 Ytest_predict = clf.predict(data_test)
 
+Ytrain_predict.columns=['Y_train_svc_scalex']
+Ytest_predict.columns=['Y_test_svc_scalex']
+
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_svc_scalex',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_scalex',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_svc_scalex',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_test_svc_scalex',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_scalex.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_scalex.csv')
@@ -297,9 +318,12 @@ clf.fit(X_train, Y_train)
 Ytrain_predict = clf.predict(data)
 Ytest_predict = clf.predict(data_test)
 
+Ytrain_predict.columns=['Y_train_svc_x_tsne']
+Ytest_predict.columns=['Y_test_svc_x_tsne']
+
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_svc_x_tsne',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_x_tsne',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_svc_x_tsne',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_test_svc_x_tsne',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_x_tsne.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_x_tsne.csv')
@@ -319,9 +343,12 @@ clf.fit(X_train, Y_train)
 Ytrain_predict = clf.predict(data)
 Ytest_predict = clf.predict(data_test)
 
+Ytrain_predict.columns=['Y_train_svc_log_x_tsne']
+Ytest_predict.columns=['Y_test_svc_log_x_tsne']
+
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_svc_log_x_tsne',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_svc_log_x_tsne',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_svc_log_x_tsne',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_test_svc_log_x_tsne',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_svc_log_x_tsne.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_svc_log_x_tsne.csv')
@@ -371,9 +398,12 @@ r_g = robjects.globalenv['g']
 Ytrain_predict = pandas2ri.ri2py(r_g(rf_model,pandas2ri.py2ri(data)))
 Ytest_predict = pandas2ri.ri2py(r_g(rf_model,pandas2ri.py2ri(data_test)))
 
+Ytrain_predict.columns=['Y_train_r_rf']
+Ytest_predict.columns=['Y_test_r_rf']
+
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_r_rf',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_r_rf',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_r_rf',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_test_r_rf',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_r_rf_x.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_rf_x.csv')
@@ -500,9 +530,12 @@ xgboostpredtest=pd.DataFrame(pandas2ri.ri2py(r_g(rf_xgboostmodel,pandas2ri.py2ri
 xgboostpredtest.columns = ['Class_1','Class_2','Class_3','Class_4','Class_5','Class_6','Class_7','Class_8','Class_9']
 Ytest_predict=xgboostpredtest.idxmax(axis=1)
 
+Ytrain_predict.columns=['Y_train_r_xgb1']
+Ytest_predict.columns=['Y_test_r_xgb1']
+
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_r_xgb1',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_r_xgb1',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_r_xgb1',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_test_r_xgb1',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_r_xgb1_x.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_xgb1_x.csv')
@@ -629,9 +662,12 @@ xgboostpredtest=pd.DataFrame(pandas2ri.ri2py(r_g(rf_xgboostmodel,pandas2ri.py2ri
 xgboostpredtest.columns = ['Class_1','Class_2','Class_3','Class_4','Class_5','Class_6','Class_7','Class_8','Class_9']
 Ytest_predict=xgboostpredtest.idxmax(axis=1)
 
+Ytrain_predict.columns=['Y_train_r_xgb2_x_tsne']
+Ytest_predict.columns=['Y_test_r_xgb2_x_tsne']
+
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_r_xgb2_x_tsne',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_r_xgb2_x_tsne',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_r_xgb2_x_tsne',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_test_r_xgb2_x_tsne',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_r_xgb2_x_tsne.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_xgb2_x_tsne.csv')
@@ -758,9 +794,12 @@ xgboostpredtest=pd.DataFrame(pandas2ri.ri2py(r_g(rf_xgboostmodel,pandas2ri.py2ri
 xgboostpredtest.columns = ['Class_1','Class_2','Class_3','Class_4','Class_5','Class_6','Class_7','Class_8','Class_9']
 Ytest_predict=xgboostpredtest.idxmax(axis=1)
 
+Ytrain_predict.columns=['Y_train_r_xgb3_log_x_tsne']
+Ytest_predict.columns=['Y_test_r_xgb3_log_x_tsne']
+
 # Add the data to the matrix
-matrix_train.insert(matrix_train.shape[1],'Y_test_r_xgb3_log_x_tsne',Ytrain_predict)
-matrix_test.insert(matrix_test.shape[1],'Y_predict_r_xgb3_log_x_tsne',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_r_xgb3_log_x_tsne',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_test_r_xgb3_log_x_tsne',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_r_xgb3_log_x_tsne.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_xgb3_log_x_tsne.csv')
@@ -769,6 +808,9 @@ pd.DataFrame(Ytest_predict).to_csv('matrix_test_r_xgb3_log_x_tsne.csv')
 # Model 8: Tensorflow NN. Bag of 2 runs. First with Dataset: Scale( Log(X+1) ) and second with Dataset: Scale( X )
 # =============================================================================
 '''reference at https://www.kaggle.com/xenocide/tensorflow-neural-network-tutorial-with-iris-data'''
+
+data = data_raw_train
+columns = data.columns
 
 data = [data_scalelog_train,data_scale_train]
 data_test = [data_scalelog_test,data_scale_test]
@@ -782,15 +824,22 @@ predictions_proba_test = pd.DataFrame()
 #Repeat for both datasets
 for i in [0,1]:
     X_train, X_test, Y_train, Y_test = train_test_split(data[i], data_target, test_size=testsize, train_size=trainsize, random_state=24+i)
-    
-    columns = data[i].columns
+    #X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=24+i)
+
+    #columns = data[i].columns
+    #columns = data.columns
+
     feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
     
     def input_fn(df,labels):
         feature_cols = {k:tf.constant(df[k].values,shape = [df[k].size,1]) for k in columns}
         label = tf.constant(labels.values, shape = [labels.size,1])
         return feature_cols,label
-
+    
+    X_train.columns=columns #WTF!
+    data[i].columns=columns
+    data_test[i].columns=columns
+    
     classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20],n_classes = 9)
     classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
 
@@ -825,8 +874,11 @@ def bag_proba(df):
 Ytrain_predict = bag_proba(predictions_proba_train)
 Ytest_predict = bag_proba(predictions_proba_test)
                     
-matrix_train.insert(matrix_train.shape[1],'Y_test_tfNN-2x',Ytrain_predict)       
-matrix_test.insert(matrix_test.shape[1],'Y_predict_tfNN-2x',Ytest_predict)
+Ytrain_predict.columns=['Y_train_tfNN-2x']
+Ytest_predict.columns=['Y_test_tfNN-2x']
+
+matrix_train.insert(matrix_train.shape[1],'Y_train_tfNN-2x',Ytrain_predict)
+matrix_test.insert(matrix_test.shape[1],'Y_test_tfNN-2x',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_tfNN-2x.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_tfNN-2x.csv')
@@ -841,7 +893,7 @@ data_test = data_scalelog_test
 predictions_proba_train = pd.DataFrame()
 predictions_proba_test = pd.DataFrame()
 
-columns = data.columns
+#columns = data.columns
 feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
 
 #Run 6 times
@@ -850,9 +902,12 @@ run=0
 while run < nruns:
     X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=26+run)
     
+    X_train.columns=columns #WTF!    
+    
     classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20],n_classes = 9)
     classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
     
+
     #    Check precision of the fitting
     #    #ev = classifier.evaluate(input_fn=lambda: input_fn(X_test,y_test),steps=1)
     #    #print(ev)
@@ -869,9 +924,12 @@ while run < nruns:
 #Bagging
 Ytrain_predict = bag_proba(predictions_proba_train)
 Ytest_predict = bag_proba(predictions_proba_test)
-                    
-matrix_train.insert(matrix_train.shape[1],'Y_test_tfNN-6x',Ytrain_predict)       
-matrix_test.insert(matrix_test.shape[1],'Y_predict_tfNN-6x',Ytest_predict)
+        
+Ytrain_predict.columns=['Y_train_tfNN-6x']
+Ytest_predict.columns=['Y_test_tfNN-6x']
+            
+matrix_train.insert(matrix_train.shape[1],'Y_train_tfNN-6x',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_test_tfNN-6x',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_tfNN-6x.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_tfNN-6x.csv')  
@@ -886,7 +944,7 @@ data_test = data_sqrt_test
 predictions_proba_train = pd.DataFrame()
 predictions_proba_test = pd.DataFrame()
 
-columns = data.columns
+#columns = data.columns
 feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
 
 #Run 10 times
@@ -894,6 +952,8 @@ nruns=10
 run=0
 while run < nruns:
     X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=32+run)
+    
+    X_train.columns=columns #WTF!      
     
     classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20],n_classes = 9)
     classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
@@ -914,9 +974,12 @@ while run < nruns:
 #Bagging
 Ytrain_predict = bag_proba(predictions_proba_train)
 Ytest_predict = bag_proba(predictions_proba_test)
-                    
-matrix_train.insert(matrix_train.shape[1],'Y_test_tfNN-10x',Ytrain_predict)       
-matrix_test.insert(matrix_test.shape[1],'Y_predict_tfNN-10x',Ytest_predict)
+
+Ytrain_predict.columns=['Y_train_tfNN-10x']
+Ytest_predict.columns=['Y_test_tfNN-10x']        
+
+matrix_train.insert(matrix_train.shape[1],'Y_train_tfNN-10x',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_test_tfNN-10x',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_tfNN-10x.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_tfNN-10x.csv')  
@@ -933,15 +996,17 @@ predictions_proba_test = pd.DataFrame()
 predictions_train = pd.DataFrame()
 predictions_test = pd.DataFrame()
 
-columns = data.columns
+#columns = data.columns
 feature_columns = [tf.contrib.layers.real_valued_column(k) for k in columns]
 
 #Run 120 times
 nruns=120
 run=0
+
 while run < nruns:
     print("----------ITERATION N. {} - 2lay----------".format(run+1))
     X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=42+run)
+    X_train.columns=columns #WTF!          
     
     classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20,10],n_classes = 9)
     classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
@@ -952,23 +1017,35 @@ while run < nruns:
     pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
     predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
     
+    #da giu' di sotto copio queste
+    pred_train = classifier.predict_classes(input_fn=lambda: input_predict(data))
+    predictions_train.insert(predictions_train.shape[1],"run{}".format(run+1),list(pred_train))
+    #fino a qui
+    
     pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data_test))
     predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
     
+    #da giu' di sotto copio queste
+    pred_test = classifier.predict_classes(input_fn=lambda: input_predict(data))
+    predictions_test.insert(predictions_test.shape[1],"run{}".format(run+1),list(pred_test))
+    #fino a qui
+    
 #    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
 #    predictions.insert(predictions.shape[1],"run{}".format(run+1),list(pred))
+    
     run+=1
 
-    pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
-    pred_train = classifier.predict_classes(input_fn=lambda: input_predict(data))
-    predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
-    predictions_train.insert(predictions_train.shape[1],"run{}".format(run+1),list(pred_train))
-    
-    pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data))
-    pred_test = classifier.predict_classes(input_fn=lambda: input_predict(data))
-    predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
-    predictions_test.insert(predictions_test.shape[1],"run{}".format(run+1),list(pred_test))
-
+##NON CAPISCO DA QUI
+#    pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
+#    pred_train = classifier.predict_classes(input_fn=lambda: input_predict(data))
+#    predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
+#    predictions_train.insert(predictions_train.shape[1],"run{}".format(run+1),list(pred_train))
+#    
+#    pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data))
+#    pred_test = classifier.predict_classes(input_fn=lambda: input_predict(data))
+#    predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
+#    predictions_test.insert(predictions_test.shape[1],"run{}".format(run+1),list(pred_test))
+##A QUI... commento
 
 #Bagging
 def bag_num(df):
@@ -979,14 +1056,17 @@ def bag_num(df):
         bag_class.append(class_mode_int)
     return pd.DataFrame(bag_class)    
     
-Ytrain_predict = bag_num(predictions_train)
-Ytest_predict = bag_num(predictions_test)
+#Ytrain_predict = bag_num(predictions_train)
+#Ytest_predict = bag_num(predictions_test)
 
-#Ytrain_predict = bag_proba(predictions_proba_train)
-#Ytest_predict = bag_proba(predictions_proba_test)
+Ytrain_predict = bag_proba(predictions_proba_train)
+Ytest_predict = bag_proba(predictions_proba_test)
+
+Ytrain_predict.columns=['Y_train_tfNN-120x-2lay']
+Ytest_predict.columns=['Y_test_tfNN-120x-2lay'] 
                     
-matrix_train.insert(matrix_train.shape[1],'Y_test_tfNN-120x-2lay',Ytrain_predict)       
-matrix_test.insert(matrix_test.shape[1],'Y_predict_tfNN-120x-2lay',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_tfNN-120x-2lay',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_test_tfNN-120x-2lay',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_tfNN-120x-2lay.csv')
 pd.DataFrame(Ytest_predict).to_csv('matrix_test_tfNN-120x-2lay.csv')  
@@ -1012,6 +1092,7 @@ run=0
 while run < nruns:
     print("----------ITERATION N. {} - 3lay----------".format(run+1))
     X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=trainsize, random_state=162+run)
+    X_train.columns=columns 
     
     classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,hidden_units=[20,10,10],n_classes = 9)
     classifier.fit(input_fn=lambda: input_fn(X_train,Y_train),steps = 1000)
@@ -1021,35 +1102,42 @@ while run < nruns:
     #    #print(ev)
     pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
     predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
+    pred_train = classifier.predict_classes(input_fn=lambda: input_predict(data))
+    predictions_train.insert(predictions_train.shape[1],"run{}".format(run+1),list(pred_train))
     
     pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data_test))
     predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
+    pred_test = classifier.predict_classes(input_fn=lambda: input_predict(data))
+    predictions_test.insert(predictions_test.shape[1],"run{}".format(run+1),list(pred_test))
     
 #    pred = classifier.predict_classes(input_fn=lambda: input_predict(X_test))
 #    predictions.insert(predictions.shape[1],"run{}".format(run+1),list(pred))
     run+=1
 
-    pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
-    pred_train = classifier.predict_classes(input_fn=lambda: input_predict(data))
-    predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
-    predictions_train.insert(predictions_train.shape[1],"run{}".format(run+1),list(pred_train))
-    
-    pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data))
-    pred_test = classifier.predict_classes(input_fn=lambda: input_predict(data))
-    predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
-    predictions_test.insert(predictions_test.shape[1],"run{}".format(run+1),list(pred_test))
+#    pred_proba_train = classifier.predict_proba(input_fn=lambda: input_predict(data))
+#    pred_train = classifier.predict_classes(input_fn=lambda: input_predict(data))
+#    predictions_proba_train.insert(predictions_proba_train.shape[1],"run{}".format(run+1),list(pred_proba_train))
+#    predictions_train.insert(predictions_train.shape[1],"run{}".format(run+1),list(pred_train))
+#    
+#    pred_proba_test = classifier.predict_proba(input_fn=lambda: input_predict(data))
+#    pred_test = classifier.predict_classes(input_fn=lambda: input_predict(data))
+#    predictions_proba_test.insert(predictions_proba_test.shape[1],"run{}".format(run+1),list(pred_proba_test))
+#    predictions_test.insert(predictions_test.shape[1],"run{}".format(run+1),list(pred_test))
 
 
 #Bagging
 
-Ytrain_predict = bag_num(predictions_train)
-Ytest_predict = bag_num(predictions_test)
+#Ytrain_predict = bag_num(predictions_train)
+#Ytest_predict = bag_num(predictions_test)
 
-#Ytrain_predict = bag_proba(predictions_proba_train)
-#Ytest_predict = bag_proba(predictions_proba_test)
+Ytrain_predict = bag_proba(predictions_proba_train)
+Ytest_predict = bag_proba(predictions_proba_test)
+
+Ytrain_predict.columns=['Y_train_tfNN-120x-3lay']
+Ytest_predict.columns=['Y_test_tfNN-120x-3lay']  
                     
-matrix_train.insert(matrix_train.shape[1],'Y_test_tfNN-120x-3lay',Ytrain_predict)       
-matrix_test.insert(matrix_test.shape[1],'Y_predict_tfNN-120x-3lay',Ytest_predict)
+matrix_train.insert(matrix_train.shape[1],'Y_train_tfNN-120x-3lay',Ytrain_predict)       
+matrix_test.insert(matrix_test.shape[1],'Y_test_tfNN-120x-3lay',Ytest_predict)
 
 pd.DataFrame(Ytrain_predict).to_csv('matrix_train_tfNN-120x-3lay.csv')
-pd.DataFrame(Ytest_predict).to_csv('matrix_test_tfNN-120x-3lay.csv')  
+pd.DataFrame(Ytest_predict).to_csv('matrix_test_tfNN-120x-3lay.csv') 

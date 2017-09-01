@@ -1,4 +1,4 @@
-%RUN IN MATLAB INSTALLING Parametric - TSNE by Laurens van der Maaten
+%RUN IN MATLAB INSTALLING Parametric - TSNE by Laurens van der Maaten @ https://lvdmaaten.github.io/tsne/
 
 close all
 clear all

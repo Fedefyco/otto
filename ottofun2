@@ -286,7 +286,7 @@ data_test = data_scale_test
 
 X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=17)
 
-clf = SVC(gamma=2, C=1)
+clf = SVC(gamma='auto', C=1)
 clf.fit(X_train, Y_train) 
 
 Ytrain_predict = clf.predict(data)
@@ -312,7 +312,7 @@ data_test = pd.concat([pd.DataFrame(scale(data_raw_test)), pd.DataFrame(scale(da
 X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=18)
 
 
-clf = SVC(gamma=2, C=1)
+clf = SVC(gamma='auto', C=1)
 clf.fit(X_train, Y_train) 
 
 Ytrain_predict = clf.predict(data)
@@ -337,7 +337,7 @@ data_test = pd.concat([pd.DataFrame(scale(np.log(1+data_raw_test))), pd.DataFram
 
 X_train, X_test, Y_train, Y_test = train_test_split(data, data_target, test_size=testsize, train_size=svc_trainsize, random_state=19)
 
-clf = SVC(gamma=2, C=1)
+clf = SVC(gamma='auto', C=1)
 clf.fit(X_train, Y_train) 
 
 Ytrain_predict = clf.predict(data)

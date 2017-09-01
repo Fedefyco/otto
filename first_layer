@@ -371,7 +371,7 @@ robjects.r('''
            f <- function(train) {
            
                     library(randomForest)
-                    train1.rf <- randomForest(target ~ ., data=train, importance = TRUE, do.trace = 100)
+                    train1.rf <- randomForest(as.factor(target) ~ ., data=train, importance = TRUE, do.trace = 100)
 
             }
             ''')

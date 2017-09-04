@@ -5,6 +5,7 @@
 -2nd level: there are 3 models trained using 33 meta features + 7 features from 1st level: XGBOOST, Neural Network(NN) and ADABOOST with ExtraTrees.
 
 -3rd level: it's composed by a weighted mean of 2nd level predictions.
+
 All models in 1st layers are trained using a 5 fold cross-validation technique using always the same fold indices.
 
 The 2nd level we trainned using 4 Kfold random indices. It provided us the ability to calculate the score before submitting to the leader board. All our cross-validate scores are extremely correlated with LB scores, so we have a good estimate of performance locally and it enabled us the ability to discard useless models for the 2nd learning level.
